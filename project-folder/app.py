@@ -5,7 +5,7 @@ import re
 from openpyxl.styles import PatternFill
 import os
 
-# Display the animated GIF above the title
+# Display the .webp animation above the title
 st.image("assets/chillguy.webp", use_column_width=True)
 
 # Streamlit app title
