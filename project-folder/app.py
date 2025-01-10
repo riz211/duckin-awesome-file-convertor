@@ -207,7 +207,12 @@ if uploaded_files:
         # Sort by the temporary column, so rows with missing weights appear at the bottom
         combined_df = combined_df.sort_values(by='Missing Weight', ascending=True).drop(columns=['Missing Weight'])
 
+        # Re-render the updated DataFrame
+        st.write("### Updated Final Data Preview")
+        st.dataframe(combined_df)
+
         st.success("Rows with missing weights have been moved to the bottom.")
+
 
         if st.button("Export to Excel"):
             buffer = BytesIO()
