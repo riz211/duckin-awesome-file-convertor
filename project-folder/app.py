@@ -6,24 +6,23 @@ from openpyxl.styles import PatternFill
 import os
 
 import streamlit as st
-import os
 
-# Debugging the file path
-gif_path = "project-folder/assets/chillguy.gif"
-if os.path.exists(gif_path):
-    st.success(f"The GIF file exists at: {os.path.abspath(gif_path)}")
-else:
-    st.error(f"The GIF file does not exist at: {os.path.abspath(gif_path)}")
-
-# Display the GIF using st.markdown()
+# Center the GIF above the title
 st.markdown(
-    f"""
-    <div style="text-align: center;">
-        <img src="{gif_path}" alt="Loading Animation" style="width:200px; height:auto;">
-    </div>
+    """
+    <style>
+    .center-image {
+        display: flex;
+        justify-content: center;
+    }
+    </style>
     """,
-    unsafe_allow_html=True
+    unsafe_allow_html=True,
 )
+
+st.markdown('<div class="center-image">', unsafe_allow_html=True)
+st.image("project-folder/assets/chillguy.gif", use_column_width=False, width=200)
+st.markdown('</div>', unsafe_allow_html=True)
 
 # Streamlit app title
 st.title("Fuckin' Awesome File Convertor")
