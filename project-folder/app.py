@@ -103,45 +103,41 @@ if uploaded_files:
             lambda x: round(x / 16, 2) if x is not None else None
         )
 
-# Step 9.1: Highlight rows with missing weights
-st.write("### Highlighting Rows with Missing ITEM WEIGHT (pounds)")
+        # Step 9.1: Highlight rows with missing weights
+        st.write("### Highlighting Rows with Missing ITEM WEIGHT (pounds)")
 
-# Step 10: Add SHIPPING COST column
-st.write("### Adding SHIPPING COST Column")
+        # Step 10: Add SHIPPING COST column
+        st.write("### Adding SHIPPING COST Column")
 
-shipping_legend_path = "data/default_shipping_legend.xlsx"  # Relative path in the repository
+        shipping_legend_path = "data/default_shipping_legend.xlsx"  # Relative path in the repository
 
-# Check if the file exists
-if not os.path.exists(shipping_legend_path):
-    st.error(f"The shipping legend file does not exist at the specified path: {shipping_legend_path}")
-else:
-    try:
-        # Specify the engine explicitly for reading Excel
-        shipping_legend = pd.read_excel(shipping_legend_path, engine="openpyxl")
-        st.success("Shipping legend file loaded successfully.")
-    except Exception as e:
-        st.error(f"Error reading shipping legend file: {e}")
-        shipping_legend = None
+        if not os.path.exists(shipping_legend_path):
+            st.error(f"The shipping legend file does not exist at the specified path: {shipping_legend_path}")
+        else:
+            try:
+                shipping_legend = pd.read_excel(shipping_legend_path, engine="openpyxl")
+                st.success("Shipping legend file loaded successfully.")
+            except Exception as e:
+                st.error(f"Error reading shipping legend file: {e}")
+                shipping_legend = None
 
-if shipping_legend is not None and {"Weight Range Min (lb)", "Weight Range Max (lb)", "SHIPPING COST"}.issubset(shipping_legend.columns):
-    # Define a function to calculate shipping cost
-    def calculate_shipping_cost(weight, legend):
-        if pd.isnull(weight):
-            return None
-        for _, row in legend.iterrows():
-            if row["Weight Range Min (lb)"] <= weight <= row["Weight Range Max (lb)"]:
-                return row["SHIPPING COST"]
-        return None
+        if shipping_legend is not None and {"Weight Range Min (lb)", "Weight Range Max (lb)", "SHIPPING COST"}.issubset(shipping_legend.columns):
+            def calculate_shipping_cost(weight, legend):
+                if pd.isnull(weight):
+                    return None
+                for _, row in legend.iterrows():
+                    if row["Weight Range Min (lb)"] <= weight <= row["Weight Range Max (lb)"]:
+                        return row["SHIPPING COST"]
+                return None
 
-    # Calculate SHIPPING COST based on ITEM WEIGHT (pounds)
-    combined_df["SHIPPING COST"] = combined_df["ITEM WEIGHT (pounds)"].apply(
-        lambda w: calculate_shipping_cost(w, shipping_legend)
-    )
-else:
-    st.error("Shipping legend file is missing required columns: 'Weight Range Min (lb)', 'Weight Range Max (lb)', 'SHIPPING COST'.")
+            combined_df["SHIPPING COST"] = combined_df["ITEM WEIGHT (pounds)"].apply(
+                lambda w: calculate_shipping_cost(w, shipping_legend)
+            )
+        else:
+            st.error("Shipping legend file is missing required columns: 'Weight Range Min (lb)', 'Weight Range Max (lb)', 'SHIPPING COST'.")
 
         # Step 10.1: Add RETAIL PRICE column
-    if all(col in combined_df.columns for col in ["COST_PRICE", "SHIPPING COST", "HANDLING COST"]):
+        if all(col in combined_df.columns for col in ["COST_PRICE", "SHIPPING COST", "HANDLING COST"]):
             combined_df["RETAIL PRICE"] = combined_df.apply(
                 lambda row: round(
                     (row["COST_PRICE"] + row["SHIPPING COST"] + row["HANDLING COST"]) * 1.35, 2
@@ -162,31 +158,23 @@ else:
 
         # Step 12: Final Output and Download
         st.write("### Final Data Preview")
-        st.dataframe(combined_df)  # Display the final DataFrame in the app
+        st.dataframe(combined_df)
 
         if st.button("Export to Excel"):
-            # Create an in-memory BytesIO buffer for the final DataFrame
             buffer = BytesIO()
             with pd.ExcelWriter(buffer, engine="openpyxl") as writer:
-                combined_df.to_excel(writer, index=False, sheet_name="Consolidated Data")  # Write the final DataFrame
+                combined_df.to_excel(writer, index=False, sheet_name="Consolidated Data")
                 worksheet = writer.sheets["Consolidated Data"]
 
-                # Apply conditional formatting for missing ITEM WEIGHT (pounds)
                 red_fill = PatternFill(start_color="FFCCCC", end_color="FFCCCC", fill_type="solid")
-                for row_index, weight in enumerate(combined_df["ITEM WEIGHT (pounds)"], start=2):  # Start from row 2
-                    if pd.isnull(weight):  # Highlight rows with missing weights
+                for row_index, weight in enumerate(combined_df["ITEM WEIGHT (pounds)"], start=2):
+                    if pd.isnull(weight):
                         for col_index in range(1, len(combined_df.columns) + 1):
                             worksheet.cell(row=row_index, column=col_index).fill = red_fill
 
-            # Set the buffer cursor to the start
             buffer.seek(0)
-
-            # Use the buffer content for the download button
             st.download_button(
                 label="Download Excel File",
                 data=buffer.getvalue(),
                 file_name="Consolidated_Data.xlsx",
-                mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-            )
-else:
-    st.info("Upload one or more Excel files to get started.")
+                mime="application/vnd.open
