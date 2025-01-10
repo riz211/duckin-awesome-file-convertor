@@ -110,7 +110,7 @@ if uploaded_files:
         # Step 10: Add SHIPPING COST column
         st.write("### Adding SHIPPING COST Column")
 
-        shipping_legend_path = "data/default_shipping_legend.xlsx"  # Relative path in the repository
+        shipping_legend_path = "https://github.com/riz211/duckin-awesome-file-convertor/tree/main/project-folder/data/default_shipping_legend.xlsx"  # Relative path in the repository
 
         if not os.path.exists(shipping_legend_path):
             st.error(f"The shipping legend file does not exist at the specified path: {shipping_legend_path}")
