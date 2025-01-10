@@ -55,8 +55,8 @@ if uploaded_files:
 
         # Step 4.1: Format SKU column to remove commas and ensure it is displayed as a string
         if "SKU" in combined_df.columns:
-        combined_df["SKU"] = combined_df["SKU"].astype(str).str.replace(",", "").str.strip()
-        st.success("SKU column formatted to remove commas.")
+            combined_df["SKU"] = combined_df["SKU"].astype(str).str.replace(",", "").str.strip()
+            st.success("SKU column formatted to remove commas.")
 
         # Step 5: Clean TITLE column
         if "TITLE" in combined_df.columns:
