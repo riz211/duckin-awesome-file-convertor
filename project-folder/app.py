@@ -206,14 +206,31 @@ if uploaded_files:
 
         # Step 12.2: Define a styling function for highlighting rows
         def highlight_missing_weights(row):
-            if pd.isnull(row["ITEM WEIGHT (pounds)"]):
-                return ["background-color: #FFCCCC"] * len(row)
-            return [""] * len(row)
+        if pd.isnull(row["ITEM WEIGHT (pounds)"]):
+            return ["background-color: #FFCCCC"] * len(row)
+        return [""] * len(row)
 
-        # Step 12.3: Display the styled DataFrame in the preview
-        st.write("### Updated Final Data Preview with Highlights")
-        styled_df = combined_df.style.apply(highlight_missing_weights, axis=1)
+        # Step 12.4: Format numeric columns to 2 decimal places
+        numeric_columns = [
+            "COST_PRICE",
+            "HANDLING COST",
+            "ITEM WEIGHT (pounds)",
+            "SHIPPING COST",
+            "RETAIL PRICE",
+            "MIN PRICE",
+            "MAX PRICE",
+        ]
+
+        # Apply formatting for numeric columns
+        styled_df = (
+            combined_df.style.apply(highlight_missing_weights, axis=1)
+            .format({col: "{:.2f}" for col in numeric_columns})
+        )
+
+        # Display the styled DataFrame with formatting
+        st.write("### Updated Final Data Preview with Highlights and Formatting")
         st.dataframe(styled_df)
+
 
 
 
