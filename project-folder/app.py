@@ -7,24 +7,17 @@ import os
 
 import streamlit as st
 
-# Center the GIF above the title
+# Use custom HTML and CSS to ensure the GIF is perfectly centered
 st.markdown(
     """
-    <style>
-    .center-image {
-        display: flex;
-        justify-content: center;
-    }
-    </style>
+    <div style="display: flex; justify-content: center; margin-bottom: 20px;">
+        <img src="project-folder/assets/chillguy.gif" alt="Loading Animation" style="width: 200px; height: auto;">
+    </div>
     """,
     unsafe_allow_html=True,
 )
 
-st.markdown('<div class="center-image">', unsafe_allow_html=True)
-st.image("project-folder/assets/chillguy.gif", use_column_width=False, width=300)
-st.markdown('</div>', unsafe_allow_html=True)
-
-# Streamlit app title
+# App title
 st.title("Fuckin' Awesome File Convertor")
 
 # Step 1: File uploader
