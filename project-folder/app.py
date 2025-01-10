@@ -103,29 +103,42 @@ if uploaded_files:
             lambda x: round(x / 16, 2) if x is not None else None
         )
 
-        # Step 9.1: Highlight rows with missing weights
-        st.write("### Highlighting Rows with Missing ITEM WEIGHT (pounds)")
+# Step 9.1: Highlight rows with missing weights
+st.write("### Highlighting Rows with Missing ITEM WEIGHT (pounds)")
 
-        # Step 10: Add SHIPPING COST column
-        shipping_legend_path = r"https://github.com/riz211/duckin-awesome-file-convertor/blob/main/project-folder/data/default_shipping_legend.xlsx"
-        try:
-            shipping_legend = pd.read_excel(shipping_legend_path)
-        except Exception as e:
-            st.error(f"Error reading shipping legend file: {e}")
-            shipping_legend = None
+# Step 10: Add SHIPPING COST column
+st.write("### Adding SHIPPING COST Column")
 
-        if shipping_legend is not None and {"Weight Range Min (lb)", "Weight Range Max (lb)", "SHIPPING COST"}.issubset(shipping_legend.columns):
-            def calculate_shipping_cost(weight, legend):
-                if pd.isnull(weight):
-                    return None
-                for _, row in legend.iterrows():
-                    if row["Weight Range Min (lb)"] <= weight <= row["Weight Range Max (lb)"]:
-                        return row["SHIPPING COST"]
-                return None
+shipping_legend_path = "data/default_shipping_legend.xlsx"  # Relative path in the repository
 
-            combined_df["SHIPPING COST"] = combined_df["ITEM WEIGHT (pounds)"].apply(
-                lambda w: calculate_shipping_cost(w, shipping_legend)
-            )
+# Check if the file exists
+if not os.path.exists(shipping_legend_path):
+    st.error(f"The shipping legend file does not exist at the specified path: {shipping_legend_path}")
+else:
+    try:
+        # Specify the engine explicitly for reading Excel
+        shipping_legend = pd.read_excel(shipping_legend_path, engine="openpyxl")
+        st.success("Shipping legend file loaded successfully.")
+    except Exception as e:
+        st.error(f"Error reading shipping legend file: {e}")
+        shipping_legend = None
+
+if shipping_legend is not None and {"Weight Range Min (lb)", "Weight Range Max (lb)", "SHIPPING COST"}.issubset(shipping_legend.columns):
+    # Define a function to calculate shipping cost
+    def calculate_shipping_cost(weight, legend):
+        if pd.isnull(weight):
+            return None
+        for _, row in legend.iterrows():
+            if row["Weight Range Min (lb)"] <= weight <= row["Weight Range Max (lb)"]:
+                return row["SHIPPING COST"]
+        return None
+
+    # Calculate SHIPPING COST based on ITEM WEIGHT (pounds)
+    combined_df["SHIPPING COST"] = combined_df["ITEM WEIGHT (pounds)"].apply(
+        lambda w: calculate_shipping_cost(w, shipping_legend)
+    )
+else:
+    st.error("Shipping legend file is missing required columns: 'Weight Range Min (lb)', 'Weight Range Max (lb)', 'SHIPPING COST'.")
 
         # Step 10.1: Add RETAIL PRICE column
         if all(col in combined_df.columns for col in ["COST_PRICE", "SHIPPING COST", "HANDLING COST"]):
