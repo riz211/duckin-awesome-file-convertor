@@ -141,7 +141,7 @@ else:
     st.error("Shipping legend file is missing required columns: 'Weight Range Min (lb)', 'Weight Range Max (lb)', 'SHIPPING COST'.")
 
         # Step 10.1: Add RETAIL PRICE column
-        if all(col in combined_df.columns for col in ["COST_PRICE", "SHIPPING COST", "HANDLING COST"]):
+    if all(col in combined_df.columns for col in ["COST_PRICE", "SHIPPING COST", "HANDLING COST"]):
             combined_df["RETAIL PRICE"] = combined_df.apply(
                 lambda row: round(
                     (row["COST_PRICE"] + row["SHIPPING COST"] + row["HANDLING COST"]) * 1.35, 2
