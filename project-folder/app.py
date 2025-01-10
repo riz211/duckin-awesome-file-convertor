@@ -3,6 +3,7 @@ import streamlit as st
 from io import BytesIO
 import re
 from openpyxl.styles import PatternFill
+import os
 
 # Streamlit app title
 st.title("Fuckin' Awesome File Convertor")
@@ -177,4 +178,7 @@ if uploaded_files:
                 label="Download Excel File",
                 data=buffer.getvalue(),
                 file_name="Consolidated_Data.xlsx",
-                mime="application/vnd.open
+                mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+            )
+else:
+    st.info("Upload one or more Excel files to get started.")
