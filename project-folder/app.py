@@ -5,11 +5,11 @@ import re
 from openpyxl.styles import PatternFill
 import os
 
-# Display the animated GIF above the title
+# Display the GIF centered above the title
 st.markdown(
     """
     <div style="text-align: center;">
-        <img src="project-folder/assets/chillguy.gif" alt="Loading Animation" style="width:50%; height:auto;">
+        <img src="project-folder/assets/chillguy.gif" alt="Loading Animation" style="width:300px; height:auto;">
     </div>
     """,
     unsafe_allow_html=True
