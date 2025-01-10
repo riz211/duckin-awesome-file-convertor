@@ -5,11 +5,21 @@ import re
 from openpyxl.styles import PatternFill
 import os
 
-# Display the GIF centered above the title
+import streamlit as st
+import os
+
+# Debugging the file path
+gif_path = "project-folder/assets/chillguy.gif"
+if os.path.exists(gif_path):
+    st.success(f"The GIF file exists at: {os.path.abspath(gif_path)}")
+else:
+    st.error(f"The GIF file does not exist at: {os.path.abspath(gif_path)}")
+
+# Display the GIF using st.markdown()
 st.markdown(
-    """
+    f"""
     <div style="text-align: center;">
-        <img src="project-folder/assets/chillguy.gif" alt="Loading Animation" style="width:300px; height:auto;">
+        <img src="{gif_path}" alt="Loading Animation" style="width:200px; height:auto;">
     </div>
     """,
     unsafe_allow_html=True
