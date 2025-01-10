@@ -89,10 +89,10 @@ if uploaded_files:
         st.write("### Adding ITEM WEIGHT (pounds) Column")
 
         def extract_weight(title):
-            match = re.search(r"(\d+(\.\d+)?)\s*(?:oz|ounces|fl oz|fluid ounces)", title, re.IGNORECASE)
+            match = re.search(r"(\d+(\.\d+)?)\s*(?:oz|ounces|fl oz|fluid ounces|fluid ounce)", title, re.IGNORECASE)
             if match:
                 weight = float(match.group(1))
-                if re.search(r"fl oz|fluid ounces", title, re.IGNORECASE):
+                if re.search(r"fl oz|fluid ounces|fluid ounce", title, re.IGNORECASE):
                     weight += 10
                 else:
                     weight += 6
