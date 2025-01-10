@@ -198,20 +198,23 @@ if uploaded_files:
         # Step 12: Export final DataFrame with Conditional Formatting
         st.write("### Download Consolidated File")
 
-        # Step 12.1: Move rows with missing weights to the end
+       # Step 12.1: Move rows with missing weights to the end
         st.write("### Reordering Rows with Missing Weights")
-
-        # Add a temporary column to indicate missing weights
         combined_df['Missing Weight'] = combined_df['ITEM WEIGHT (pounds)'].isnull()
-
-        # Sort by the temporary column, so rows with missing weights appear at the bottom
         combined_df = combined_df.sort_values(by='Missing Weight', ascending=True).drop(columns=['Missing Weight'])
-
-        # Re-render the updated DataFrame
-        st.write("### Updated Final Data Preview")
-        st.dataframe(combined_df)
-
         st.success("Rows with missing weights have been moved to the bottom.")
+
+        # Step 12.2: Define a styling function for highlighting rows
+        def highlight_missing_weights(row):
+            if pd.isnull(row["ITEM WEIGHT (pounds)"]):
+            return ["background-color: #FFCCCC"] * len(row)
+            return [""] * len(row)
+
+        # Step 12.3: Display the styled DataFrame in the preview
+        st.write("### Updated Final Data Preview with Highlights")
+        styled_df = combined_df.style.apply(highlight_missing_weights, axis=1)
+        st.dataframe(styled_df)
+
 
 
         if st.button("Export to Excel"):
