@@ -6,7 +6,7 @@ from openpyxl.styles import PatternFill
 import os
 
 # Display the .webp animation above the title
-st.image("assets/chillguy.webp", use_column_width=True)
+st.image("project-folder/assets/chillguy.webp", use_column_width=True)
 
 # Streamlit app title
 st.title("Fuckin' Awesome File Convertor")
