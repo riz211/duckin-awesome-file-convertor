@@ -99,21 +99,37 @@ if uploaded_files:
         # Step 9: Add ITEM WEIGHT (pounds) column
         st.write("### Adding ITEM WEIGHT (pounds) Column")
 
-        def extract_weight(title):
-            match = re.search(r"(\d+(\.\d+)?)\s*(?:oz|ounces|fl oz|fl. oz.|fluid ounces|fluid ounce)", title, re.IGNORECASE)
-            if match:
-                weight = float(match.group(1))
-                if re.search(r"fl oz|fl. oz.|fluid ounces|fluid ounce", title, re.IGNORECASE):
-                    weight += 10
+        if "TITLE" in combined_df.columns:
+            combined_df["ITEM WEIGHT (pounds)"] = combined_df["TITLE"].apply(
+                lambda x: extract_weight_with_packs(x) if isinstance(x, str) else None
+            )
+            st.success("ITEM WEIGHT (pounds) column updated to account for pack sizes.")
+
+        def extract_weight_with_packs(title):
+            """
+            Extract the weight and account for pack size in the TITLE.
+            """
+            # Extract the weight (e.g., "8 oz", "10 fl oz", etc.)
+            match_weight = re.search(r"(\d+(\.\d+)?)\s*(?:oz|ounces|fl oz|fluid ounces)", title, re.IGNORECASE)
+            single_unit_weight = float(match_weight.group(1)) if match_weight else None
+
+            # Extract the pack size (e.g., "2 pack", "pack of 3", etc.)
+            match_pack = re.search(r"(?:\b(\d+)\s*pack\b|\bpack of\s*(\d+))", title, re.IGNORECASE)
+            pack_size = int(match_pack.group(1) or match_pack.group(2)) if match_pack else 1  # Default to 1 if no pack
+
+            if single_unit_weight is not None:
+                # Add 6 oz or 10 oz based on the unit type and calculate the total weight
+                if re.search(r"fl oz|fluid ounces", title, re.IGNORECASE):
+                    single_unit_weight += 10  # Add 10 oz for "fl oz"
                 else:
-                    weight += 6
-                return weight
+                    single_unit_weight += 6  # Add 6 oz for "oz" or "ounces"
+
+                # Calculate total weight for the pack and convert to pounds
+                total_weight = (single_unit_weight * pack_size) / 16  # Convert oz to pounds
+                return round(total_weight, 2)
+
             return None
 
-        combined_df["ITEM WEIGHT (pounds)"] = combined_df["TITLE"].apply(lambda x: extract_weight(x) if isinstance(x, str) else None)
-        combined_df["ITEM WEIGHT (pounds)"] = combined_df["ITEM WEIGHT (pounds)"].apply(
-            lambda x: round(x / 16, 2) if x is not None else None
-        )
 
         # Step 9.1: Highlight rows with missing weights
         st.write("### Highlighting Rows with Missing ITEM WEIGHT (pounds)")
