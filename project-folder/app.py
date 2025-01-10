@@ -6,7 +6,14 @@ from openpyxl.styles import PatternFill
 import os
 
 # Display the animated GIF above the title
-st.image("project-folder/assets/chillguy.gif", use_column_width=True)
+st.markdown(
+    """
+    <div style="text-align: center;">
+        <img src="project-folder/assets/chillguy.gif" alt="Loading Animation" style="width:50%; height:auto;">
+    </div>
+    """,
+    unsafe_allow_html=True
+)
 
 # Streamlit app title
 st.title("Fuckin' Awesome File Convertor")
