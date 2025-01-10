@@ -21,7 +21,7 @@ st.markdown(
 )
 
 st.markdown('<div class="center-image">', unsafe_allow_html=True)
-st.image("project-folder/assets/chillguy.gif", use_container_width=False, width=300)
+st.image("project-folder/assets/chillguy.gif", use_column_width=False, width=300)
 st.markdown('</div>', unsafe_allow_html=True)
 
 # Streamlit app title
