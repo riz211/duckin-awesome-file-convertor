@@ -5,18 +5,6 @@ import re
 from openpyxl.styles import PatternFill
 import os
 
-import streamlit as st
-
-# Use custom HTML and CSS to ensure the GIF is perfectly centered
-st.markdown(
-    """
-    <div style="display: flex; justify-content: center; margin-bottom: 20px;">
-        <img src="project-folder/assets/chillguy.gif" alt="Loading Animation" style="width: 200px; height: auto;">
-    </div>
-    """,
-    unsafe_allow_html=True,
-)
-
 # App title
 st.title("Fuckin' Awesome File Convertor")
 
