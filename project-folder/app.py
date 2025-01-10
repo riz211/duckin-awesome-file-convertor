@@ -195,9 +195,19 @@ if uploaded_files:
         """)
 
 
-        # Step 12: Final Output and Download
-        st.write("### Final Data Preview")
-        st.dataframe(combined_df)
+        # Step 12: Export final DataFrame with Conditional Formatting
+        st.write("### Download Consolidated File")
+
+        # Step 12.1: Move rows with missing weights to the end
+        st.write("### Reordering Rows with Missing Weights")
+
+        # Add a temporary column to indicate missing weights
+        combined_df['Missing Weight'] = combined_df['ITEM WEIGHT (pounds)'].isnull()
+
+        # Sort by the temporary column, so rows with missing weights appear at the bottom
+        combined_df = combined_df.sort_values(by='Missing Weight', ascending=True).drop(columns=['Missing Weight'])
+
+        st.success("Rows with missing weights have been moved to the bottom.")
 
         if st.button("Export to Excel"):
             buffer = BytesIO()
