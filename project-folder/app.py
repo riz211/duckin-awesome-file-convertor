@@ -208,7 +208,7 @@ if uploaded_files:
         def highlight_missing_weights(row):
             if pd.isnull(row["ITEM WEIGHT (pounds)"]):
                 return ["background-color: #FFCCCC"] * len(row)
-                return [""] * len(row)
+            return [""] * len(row)
 
         # Step 12.3: Display the styled DataFrame in the preview
         st.write("### Updated Final Data Preview with Highlights")
