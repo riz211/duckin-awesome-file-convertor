@@ -5,8 +5,8 @@ import re
 from openpyxl.styles import PatternFill
 import os
 
-# Display the .webp animation above the title
-st.image("https://giphy.com/gifs/animanias-chill-guy-8nwsuQJJqOKIueSxh9">via GIPHY", use_column_width=True)
+# Display the animated GIF above the title
+st.image("project-folder/assets/chillguy.gif", use_column_width=True)
 
 # Streamlit app title
 st.title("Fuckin' Awesome File Convertor")
