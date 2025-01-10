@@ -70,9 +70,11 @@ if uploaded_files:
             st.success("Unwanted patterns removed from TITLE column.")
 
         # Step 6: Format UPC/ISBN column
+        st.write("### Formatting UPC/ISBN Column")
         if "UPC/ISBN" in combined_df.columns:
-            combined_df["UPC/ISBN"] = combined_df["UPC/ISBN"].astype(str).str.zfill(12)
-            st.success("UPC/ISBN column formatted to have a minimum of 12 digits.")
+            combined_df["UPC/ISBN"] = combined_df["UPC/ISBN"].astype(str).str.zfill(12)  # Ensure at least 12 digits
+            combined_df["UPC/ISBN"] = combined_df["UPC/ISBN"].str.split('.').str[0]  # Remove decimals if any
+            st.success("UPC/ISBN column formatted to have a minimum of 12 digits as a string.")
 
         # Step 7: Format COST_PRICE column
         st.write("### Formatting COST_PRICE Column")
