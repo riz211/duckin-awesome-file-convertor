@@ -72,9 +72,13 @@ if uploaded_files:
         # Step 6: Format UPC/ISBN column
         st.write("### Formatting UPC/ISBN Column")
         if "UPC/ISBN" in combined_df.columns:
-            combined_df["UPC/ISBN"] = combined_df["UPC/ISBN"].astype(str).str.zfill(12)  # Ensure at least 12 digits
-            combined_df["UPC/ISBN"] = combined_df["UPC/ISBN"].str.split('.').str[0]  # Remove decimals if any
-            st.success("UPC/ISBN column formatted to have a minimum of 12 digits as a string.")
+            combined_df["UPC/ISBN"] = (
+            combined_df["UPC/ISBN"]
+            .apply(lambda x: str(int(float(x))) if pd.notnull(x) else "")  # Convert to integer, then string
+            .str.zfill(12)  # Add leading zeros to ensure 12 digits
+        )
+        st.success("UPC/ISBN column formatted to have a minimum of 12 digits as a string.")
+
 
         # Step 7: Format COST_PRICE column
         st.write("### Formatting COST_PRICE Column")
