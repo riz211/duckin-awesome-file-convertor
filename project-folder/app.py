@@ -168,6 +168,33 @@ if uploaded_files:
         # Step 11: Remove duplicate rows
         combined_df.drop_duplicates(inplace=True)
 
+        # Step 11: Remove duplicate rows
+        combined_df.drop_duplicates(inplace=True)
+
+        # Step 11.1: Calculate and Display Metrics
+        st.write("### Metrics Summary")
+
+        # Total number of listings in the input files
+        total_input_listings = len(pd.concat(all_data, ignore_index=True))
+
+        # Total number of listings in the output file
+        total_output_listings = len(combined_df)
+
+        # Total duplicates removed
+        total_duplicates_removed = total_input_listings - total_output_listings
+
+        # Total listings with no weights
+        listings_no_weights = combined_df["ITEM WEIGHT (pounds)"].isnull().sum()
+
+        # Display the metrics
+        st.markdown(f"""
+        - **Total Listings in Input Files:** {total_input_listings}
+        - **Total Listings in Output File:** {total_output_listings}
+        - **Total Duplicates Removed:** {total_duplicates_removed}
+        - **Listings with No Weights (Red Highlighted Rows):** {listings_no_weights}
+        """)
+
+
         # Step 12: Final Output and Download
         st.write("### Final Data Preview")
         st.dataframe(combined_df)
