@@ -107,7 +107,7 @@ if uploaded_files:
         st.write("### Highlighting Rows with Missing ITEM WEIGHT (pounds)")
 
         # Step 10: Add SHIPPING COST column
-        shipping_legend_path = r"C:\Users\riz\OneDrive\Desktop\Excel App\data\default_shipping_legend.xlsx"
+        shipping_legend_path = r"https://github.com/riz211/duckin-awesome-file-convertor/blob/main/project-folder/data/default_shipping_legend.xlsx"
         try:
             shipping_legend = pd.read_excel(shipping_legend_path)
         except Exception as e:
