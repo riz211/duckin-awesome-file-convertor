@@ -38,8 +38,8 @@ if uploaded_files:
         st.error("ITEM WEIGHT (pounds) column is missing.")
 else:
     st.error("The DataFrame is not defined or is empty. Please upload files to process.")
-        st.write("### Combined Data Preview (Before Renaming)")
-        st.dataframe(combined_df)
+    st.write("### Combined Data Preview (Before Renaming)")
+    st.dataframe(combined_df)
 
         # Step 3.1: Add HANDLING COST column
         st.write("### Adding HANDLING COST Column")
