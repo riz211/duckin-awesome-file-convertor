@@ -192,20 +192,30 @@ if uploaded_files:
         combined_df.drop_duplicates(inplace=True)
 
         # Step 11.1: Calculate and Display Metrics
-        st.write("### Metrics Summary")
-        total_input_listings = len(pd.concat(all_data, ignore_index
-        ))
-        total_output_listings = len(combined_df)
-        total_duplicates_removed = total_input_listings - total_output_listings
-        listings_no_weights = combined_df["ITEM WEIGHT (pounds)"].isnull().sum()
+st.write("### Metrics Summary")
 
-        # Display metrics
-        st.markdown(f"""
-        - **Total Listings in Input Files:** {total_input_listings}
-        - **Total Listings in Output File:** {total_output_listings}
-        - **Total Duplicates Removed:** {total_duplicates_removed}
-        - **Listings with No Weights (Red Highlighted Rows):** {listings_no_weights}
-        """)
+# Total number of listings in the input files
+if all_data:  # Ensure `all_data` is not empty
+    total_input_listings = len(pd.concat(all_data, ignore_index=True))
+else:
+    total_input_listings = 0
+
+# Total number of listings in the output file
+total_output_listings = len(combined_df) if not combined_df.empty else 0
+
+# Total duplicates removed
+total_duplicates_removed = total_input_listings - total_output_listings
+
+# Total listings with no weights
+listings_no_weights = combined_df["ITEM WEIGHT (pounds)"].isnull().sum() if "ITEM WEIGHT (pounds)" in combined_df.columns else 0
+
+# Display the metrics
+st.markdown(f"""
+- **Total Listings in Input Files:** {total_input_listings}
+- **Total Listings in Output File:** {total_output_listings}
+- **Total Duplicates Removed:** {total_duplicates_removed}
+- **Listings with No Weights (Red Highlighted Rows):** {listings_no_weights}
+""")
 
         # Step 12: Export final DataFrame with Conditional Formatting and Formulas
         st.write("### Download Consolidated File")
