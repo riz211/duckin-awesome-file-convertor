@@ -192,9 +192,6 @@ if uploaded_files:
         # Step 11: Remove duplicate rows
         combined_df.drop_duplicates(inplace=True)
 
-        # Step 11: Remove duplicate rows
-        combined_df.drop_duplicates(inplace=True)
-
         # Step 11.1: Calculate and Display Metrics
         st.write("### Metrics Summary")
 
@@ -259,23 +256,42 @@ if uploaded_files:
 
 
         if st.button("Export to Excel"):
-            buffer = BytesIO()
-            with pd.ExcelWriter(buffer, engine="openpyxl") as writer:
-                combined_df.to_excel(writer, index=False, sheet_name="Consolidated Data")
-                worksheet = writer.sheets["Consolidated Data"]
+    buffer = BytesIO()
+    with pd.ExcelWriter(buffer, engine="openpyxl") as writer:
+        # Write the main DataFrame to the first sheet
+        combined_df.to_excel(writer, index=False, sheet_name="Consolidated Data")
 
-                red_fill = PatternFill(start_color="FFCCCC", end_color="FFCCCC", fill_type="solid")
-                for row_index, weight in enumerate(combined_df["ITEM WEIGHT (pounds)"], start=2):
-                    if pd.isnull(weight):
-                        for col_index in range(1, len(combined_df.columns) + 1):
-                            worksheet.cell(row=row_index, column=col_index).fill = red_fill
+        # Embed the shipping legend as a separate sheet
+        if shipping_legend is not None:
+            shipping_legend.to_excel(writer, index=False, sheet_name="ShippingLegend")
 
-            buffer.seek(0)
-            st.download_button(
-                label="Download Excel File",
-                data=buffer.getvalue(),
-                file_name="Consolidated_Data.xlsx",
-                mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-            )
+        # Access the "Consolidated Data" worksheet
+        worksheet = writer.sheets["Consolidated Data"]
+
+        # Define a red fill style for missing weights
+        red_fill = PatternFill(start_color="FFCCCC", end_color="FFCCCC", fill_type="solid")
+
+        # Iterate over rows and add formulas for missing weights
+        for row_index, weight in enumerate(combined_df["ITEM WEIGHT (pounds)"], start=2):  # Start from row 2 (Excel row 2)
+            if pd.isnull(weight):
+                # Highlight the row in red
+                for col_index in range(1, len(combined_df.columns) + 1):
+                    worksheet.cell(row=row_index, column=col_index).fill = red_fill
+
+                # Add formulas to the relevant columns
+                worksheet.cell(row=row_index, column=6).value = f"=IF(D{row_index}<>\"\", VLOOKUP(D{row_index}, ShippingLegend!A:C, 3, TRUE), \"\")"  # SHIPPING COST formula
+                worksheet.cell(row=row_index, column=8).value = f"=IF(AND(E{row_index}<>\"\", F{row_index}<>\"\", G{row_index}<>\"\"), (E{row_index}+F{row_index}+G{row_index})*1.35, \"\")"  # RETAIL PRICE formula
+                worksheet.cell(row=row_index, column=9).value = f"=H{row_index}"  # MIN PRICE formula
+                worksheet.cell(row=row_index, column=10).value = f"=IF(H{row_index}<>\"\", H{row_index}*1.35, \"\")"  # MAX PRICE formula
+
+    # Save the updated Excel file
+    buffer.seek(0)
+    st.download_button(
+        label="Download Excel File",
+        data=buffer.getvalue(),
+        file_name="Consolidated_Data_with_Embedded_Legend.xlsx",
+        mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    )
+
 else:
     st.info("Upload one or more Excel files to get started.")
