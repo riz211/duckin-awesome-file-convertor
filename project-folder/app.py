@@ -5,6 +5,8 @@ import re
 from openpyxl.styles import PatternFill
 import os
 
+combined_df = pd.DataFrame()  # Initialize an empty DataFrame
+
 # App title
 st.title("Fuckin' Awesome File Convertor")
 
