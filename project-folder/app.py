@@ -106,31 +106,31 @@ if "COST_PRICE" in combined_df.columns:
             
 st.success("COST_PRICE column formatted to numeric with two decimal places.")
 
-        # Step 8: Add QUANTITY and ITEM LOCATION columns
-        combined_df["QUANTITY"] = 1
-        combined_df["ITEM LOCATION"] = "WALMART"
+# Step 8: Add QUANTITY and ITEM LOCATION columns
+combined_df["QUANTITY"] = 1
+combined_df["ITEM LOCATION"] = "WALMART"
 
-        # Step 9: Add ITEM WEIGHT (pounds) column
-        st.write("### Adding ITEM WEIGHT (pounds) Column")
+# Step 9: Add ITEM WEIGHT (pounds) column
+st.write("### Adding ITEM WEIGHT (pounds) Column")
 
-        # Step 9.1: Highlight rows with missing weights
-        st.write("### Highlighting Rows with Missing ITEM WEIGHT (pounds)")
+# Step 9.1: Highlight rows with missing weights
+st.write("### Highlighting Rows with Missing ITEM WEIGHT (pounds)")
 
-        if "ITEM WEIGHT (pounds)" in combined_df.columns:
-            combined_df["Missing Weight"] = combined_df["ITEM WEIGHT (pounds)"].isnull()
-            st.write("Missing weights have been flagged successfully.")
-        else:
-            st.error("ITEM WEIGHT (pounds) column is missing.")
+if "ITEM WEIGHT (pounds)" in combined_df.columns:
+    combined_df["Missing Weight"] = combined_df["ITEM WEIGHT (pounds)"].isnull()
+    st.write("Missing weights have been flagged successfully.")
+else:
+    st.error("ITEM WEIGHT (pounds) column is missing.")
 
-        # Function to extract weight and handle pack sizes
-        def extract_weight_with_packs(title):
-            """
-            Extract the weight and account for pack size in the TITLE.
-            """
-            try:
-                # Extract the weight (e.g., "8 oz", "10 fl oz", etc.)
-                match_weight = re.search(r"(\d+(\.\d+)?)\s*(?:oz|ounces|ounce|fl. oz.|fluid ounce|fl oz|fluid ounces)", title, re.IGNORECASE)
-                single_unit_weight = float(match_weight.group(1)) if match_weight else None
+# Function to extract weight and handle pack sizes
+def extract_weight_with_packs(title):
+    """
+    Extract the weight and account for pack size in the TITLE.
+    """
+        try:
+# Extract the weight (e.g., "8 oz", "10 fl oz", etc.)
+match_weight = re.search(r"(\d+(\.\d+)?)\s*(?:oz|ounces|ounce|fl. oz.|fluid ounce|fl oz|fluid ounces)", title, re.IGNORECASE)
+single_unit_weight = float(match_weight.group(1)) if match_weight else None
 
                 # Extract the pack size (e.g., "2 pack", "pack of 3", etc.)
                 match_pack = re.search(r"(?:\b(\d+)\s*pack\b|\bpack of\s*(\d+))", title, re.IGNORECASE)
