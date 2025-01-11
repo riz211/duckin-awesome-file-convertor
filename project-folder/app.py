@@ -106,7 +106,7 @@ if uploaded_files:
             combined_df["Missing Weight"] = combined_df["ITEM WEIGHT (pounds)"].isnull()
         st.write("Missing weights have been flagged successfully.")
         else:
-        st.error("ITEM WEIGHT (pounds) column is missing.")
+            st.error("ITEM WEIGHT (pounds) column is missing.")
 
         # Function to extract weight and handle pack sizes
         def extract_weight_with_packs(title):
