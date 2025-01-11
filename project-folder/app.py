@@ -31,9 +31,9 @@ if uploaded_files:
         # Step 3: Combine all sheets into one DataFrame
         combined_df = pd.concat(all_data, ignore_index=True)
     if not combined_df.empty:  # Check if combined_df exists and is not empty
-    if "ITEM WEIGHT (pounds)" in combined_df.columns:
-        combined_df["Missing Weight"] = combined_df["ITEM WEIGHT (pounds)"].isnull()
-        st.write("Missing weights flagged successfully.")
+        if "ITEM WEIGHT (pounds)" in combined_df.columns:
+            combined_df["Missing Weight"] = combined_df["ITEM WEIGHT (pounds)"].isnull()
+            st.write("Missing weights flagged successfully.")
     else:
         st.error("ITEM WEIGHT (pounds) column is missing.")
 else:
