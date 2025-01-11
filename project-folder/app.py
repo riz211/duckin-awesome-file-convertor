@@ -191,7 +191,7 @@ if uploaded_files:
         # Step 11: Remove duplicate rows
         combined_df.drop_duplicates(inplace=True)
 
-        # Step 11.1: Calculate and Display Metrics
+       # Step 11.1: Calculate and Display Metrics
 st.write("### Metrics Summary")
 
 # Total number of listings in the input files
@@ -201,13 +201,19 @@ else:
     total_input_listings = 0
 
 # Total number of listings in the output file
-total_output_listings = len(combined_df) if not combined_df.empty else 0
+if not combined_df.empty:
+    total_output_listings = len(combined_df)
+else:
+    total_output_listings = 0
 
 # Total duplicates removed
 total_duplicates_removed = total_input_listings - total_output_listings
 
 # Total listings with no weights
-listings_no_weights = combined_df["ITEM WEIGHT (pounds)"].isnull().sum() if "ITEM WEIGHT (pounds)" in combined_df.columns else 0
+if "ITEM WEIGHT (pounds)" in combined_df.columns:
+    listings_no_weights = combined_df["ITEM WEIGHT (pounds)"].isnull().sum()
+else:
+    listings_no_weights = 0
 
 # Display the metrics
 st.markdown(f"""
