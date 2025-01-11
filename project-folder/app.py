@@ -222,15 +222,22 @@ if uploaded_files:
         # Step 12: Export final DataFrame with Conditional Formatting and Formulas
 st.write("### Download Consolidated File")
 
+# Ensure combined_df is not empty
+if combined_df.empty:
+    st.error("The combined_df is empty. Ensure input files are uploaded and processed correctly.")
+    st.stop()
+
 # Ensure ITEM WEIGHT (pounds) column exists
 if "ITEM WEIGHT (pounds)" not in combined_df.columns:
     st.error("ITEM WEIGHT (pounds) column is missing. Ensure the TITLE column exists and is processed correctly.")
+    st.stop()
 else:
     # Step 12.1: Move rows with missing weights to the end
     st.write("### Reordering Rows with Missing Weights")
     combined_df["Missing Weight"] = combined_df["ITEM WEIGHT (pounds)"].isnull()
     combined_df = combined_df.sort_values(by="Missing Weight", ascending=True).drop(columns=["Missing Weight"])
     st.success("Rows with missing weights have been moved to the bottom.")
+
 
 # Step 12.2: Define a styling function for highlighting rows
 def highlight_missing_weights(row):
