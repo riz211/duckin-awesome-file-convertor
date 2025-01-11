@@ -37,8 +37,8 @@ if all_data:
             st.write("Missing weights flagged successfully.")
         else:
             st.error("ITEM WEIGHT (pounds) column is missing.")
-        else:
-            st.error("The DataFrame is not defined or is empty. Please upload files to process.")
+    else:
+        st.error("The DataFrame is not defined or is empty. Please upload files to process.")
 
     # Combined DataFrame Preview
     st.write("### Combined Data Preview (Before Renaming)")
