@@ -111,6 +111,18 @@ if uploaded_files:
 # Step 9: Add ITEM WEIGHT (pounds) column
 st.write("### Adding ITEM WEIGHT (pounds) Column")
 
+if not uploaded_files:
+    st.warning("No files uploaded. Please upload files to process.")
+else:
+    if not combined_df.empty and "TITLE" in combined_df.columns:
+        combined_df["ITEM WEIGHT (pounds)"] = combined_df["TITLE"].apply(
+            lambda x: extract_weight_with_packs(x) if isinstance(x, str) else None
+        )
+        st.success("ITEM WEIGHT (pounds) column updated to account for pack sizes.")
+    else:
+        st.error("The DataFrame is empty or missing the 'TITLE' column. Cannot calculate ITEM WEIGHT (pounds).")
+
+
 # Step 9.1: Highlight rows with missing weights
 st.write("### Highlighting Rows with Missing ITEM WEIGHT (pounds)")
 
