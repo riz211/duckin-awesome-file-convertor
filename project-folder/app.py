@@ -41,15 +41,15 @@ else:
     st.write("### Combined Data Preview (Before Renaming)")
     st.dataframe(combined_df)
 
-        # Step 3.1: Add HANDLING COST column
-        st.write("### Adding HANDLING COST Column")
-        combined_df["HANDLING COST"] = 0.75
-        st.success("HANDLING COST column added with default value 0.75.")
+    # Step 3.1: Add HANDLING COST column
+    st.write("### Adding HANDLING COST Column")
+    combined_df["HANDLING COST"] = 0.75
+    st.success("HANDLING COST column added with default value 0.75.")
 
-        # Step 4: Standardize and Rename Columns
-        st.write("### Renaming Columns")
-        combined_df.columns = combined_df.columns.str.strip()  # Strip column headers of extra spaces
-        column_mapping = {
+    # Step 4: Standardize and Rename Columns
+    st.write("### Renaming Columns")
+    combined_df.columns = combined_df.columns.str.strip()  # Strip column headers of extra spaces
+    column_mapping = {
             "Product Details": "TITLE",
             "Brand": "BRAND",
             "Product ID": "SKU",
