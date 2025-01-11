@@ -255,6 +255,9 @@ if uploaded_files:
 if st.button("Export to Excel"):
     buffer = BytesIO()
     with pd.ExcelWriter(buffer, engine="openpyxl") as writer:
+        # Ensure QUANTITY column has default values
+        combined_df["QUANTITY"] = 1  # Default value for all rows
+
         # Write the main DataFrame to the first sheet
         combined_df.to_excel(writer, index=False, sheet_name="Consolidated Data")
         worksheet = writer.sheets["Consolidated Data"]
@@ -265,15 +268,18 @@ if st.button("Export to Excel"):
         
         # Add red highlights and formulas for rows with missing weights
         red_fill = PatternFill(start_color="FFCCCC", end_color="FFCCCC", fill_type="solid")
-        for row_index, weight in enumerate(combined_df["ITEM WEIGHT (pounds)"], start=2):
+        for row_index, weight in enumerate(combined_df["ITEM WEIGHT (pounds)"], start=2):  # Start from row 2
             if pd.isnull(weight):
                 # Highlight row with red fill
                 for col_index in range(1, len(combined_df.columns) + 1):
                     worksheet.cell(row=row_index, column=col_index).fill = red_fill
 
+                # Add default value for HANDLING COST and QUANTITY
+                worksheet.cell(row=row_index, column=6).value = 0.75  # HANDLING COST
+                worksheet.cell(row=row_index, column=5).value = 1  # QUANTITY
+
                 # Add formulas for missing weights
-                worksheet.cell(row=row_index, column=6).value = 0.75  # HANDLING COST default
-                worksheet.cell(row=row_index, column=7).value = f"=IF(A{row_index}<>\"\", VLOOKUP(A{row_index}, ShippingLegend!A:C, 3, FALSE), \"\")"  # SHIPPING COST
+                worksheet.cell(row=row_index, column=7).value = f"=IF(E{row_index}<>\"\", VLOOKUP(E{row_index}, ShippingLegend!A:C, 3, FALSE), \"\")"  # SHIPPING COST
                 worksheet.cell(row=row_index, column=8).value = f"=IF(E{row_index}<>\"\", (E{row_index} + F{row_index} + G{row_index}) * 1.35, \"\")"  # RETAIL PRICE
                 worksheet.cell(row=row_index, column=9).value = f"=H{row_index}"  # MIN PRICE
                 worksheet.cell(row=row_index, column=10).value = f"=H{row_index} * 1.35"  # MAX PRICE
@@ -286,6 +292,7 @@ if st.button("Export to Excel"):
         file_name="Consolidated_Data_with_Formulas_Embedded_Legend.xlsx",
         mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
     )
+
 
 else:
     st.info("Upload one or more Excel files to get started.")
