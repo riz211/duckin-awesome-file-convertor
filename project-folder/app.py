@@ -28,6 +28,7 @@ for uploaded_file in uploaded_files:
         st.error(f"Error reading file {uploaded_file.name}: {e}")
 
 if all_data:
+    
 # Step 3: Combine all sheets into one DataFrame
 combined_df = pd.concat(all_data, ignore_index=True)
 
