@@ -103,49 +103,38 @@ if uploaded_files:
 
         # Function to extract weight and handle pack sizes
         def extract_weight_with_packs(title):
-            """
-            Extract the weight and account for pack size in the TITLE.
-            """
             try:
-                # Extract the weight (e.g., "8 oz", "10 fl oz", etc.)
                 match_weight = re.search(
                     r"(\d+(\.\d+)?)\s*(?:oz|ounces|ounce|fl. oz.|fluid ounce|fl oz|fluid ounces)",
                     title, re.IGNORECASE)
                 single_unit_weight = float(match_weight.group(1)) if match_weight else None
 
-                # Extract the pack size (e.g., "2 pack", "pack of 3", etc.)
                 match_pack = re.search(r"(?:\b(\d+)\s*pack\b|\bpack of\s*(\d+))", title, re.IGNORECASE)
                 pack_size = int(match_pack.group(1) or match_pack.group(2)) if match_pack else 1
 
                 if single_unit_weight is not None:
                     if match_weight and "fl oz" in match_weight.group(0).lower():
-                        single_unit_weight += 10  # Add 10 oz for "fl oz"
+                        single_unit_weight += 10
                     else:
-                        single_unit_weight += 6  # Add 6 oz for "oz" or "ounces"
+                        single_unit_weight += 6
 
-                    total_weight = (single_unit_weight * pack_size) / 16  # Convert oz to pounds
+                    total_weight = (single_unit_weight * pack_size) / 16
                     return round(total_weight, 2)
 
             except Exception as e:
                 st.error(f"Error processing title '{title}': {e}")
-
             return None
 
-        # Apply the function to the TITLE column
         if "TITLE" in combined_df.columns:
             combined_df["ITEM WEIGHT (pounds)"] = combined_df["TITLE"].apply(
                 lambda x: extract_weight_with_packs(x) if isinstance(x, str) else None
             )
             st.success("ITEM WEIGHT (pounds) column updated to account for pack sizes.")
 
-        # Step 9.1: Highlight rows with missing weights
-        st.write("### Highlighting Rows with Missing ITEM WEIGHT (pounds)")
-
         # Step 10: Add SHIPPING COST column
         st.write("### Adding SHIPPING COST Column")
 
-        shipping_legend_path = "project-folder/data/default_shipping_legend.xlsx"  # Relative path in the repository
-
+        shipping_legend_path = "project-folder/data/default_shipping_legend.xlsx"
         if not os.path.exists(shipping_legend_path):
             st.error(f"The shipping legend file does not exist at the specified path: {shipping_legend_path}")
         else:
@@ -169,7 +158,7 @@ if uploaded_files:
                 lambda w: calculate_shipping_cost(w, shipping_legend)
             )
         else:
-            st.error("Shipping legend file is missing required columns: 'Weight Range Min (lb)', 'Weight Range Max (lb)', 'SHIPPING COST'.")
+            st.error("Shipping legend file is missing required columns.")
 
         # Step 10.1: Add RETAIL PRICE column
         if all(col in combined_df.columns for col in ["COST_PRICE", "SHIPPING COST", "HANDLING COST"]):
@@ -191,112 +180,94 @@ if uploaded_files:
         # Step 11: Remove duplicate rows
         combined_df.drop_duplicates(inplace=True)
 
-       # Step 11.1: Calculate and Display Metrics
-st.write("### Metrics Summary")
+        # Step 11.1: Calculate and Display Metrics
+        st.write("### Metrics Summary")
 
-# Total number of listings in the input files
-if all_data:  # Ensure `all_data` is not empty
-    total_input_listings = len(pd.concat(all_data, ignore_index=True))
-else:
-    total_input_listings = 0
+        total_input_listings = len(pd.concat(all_data, ignore_index=True)) if all_data else 0
+        total_output_listings = len(combined_df) if not combined_df.empty else 0
+        total_duplicates_removed = total_input_listings - total_output_listings
+        listings_no_weights = combined_df["ITEM WEIGHT (pounds)"].isnull().sum() if "ITEM WEIGHT (pounds)" in combined_df.columns else 0
 
-# Total number of listings in the output file
-if not combined_df.empty:
-    total_output_listings = len(combined_df)
-else:
-    total_output_listings = 0
+        st.markdown(f"""
+        - **Total Listings in Input Files:** {total_input_listings}
+        - **Total Listings in Output File:** {total_output_listings}
+        - **Total Duplicates Removed:** {total_duplicates_removed}
+        - **Listings with No Weights (Red Highlighted Rows):** {listings_no_weights}
+        """)
 
-# Total duplicates removed
-total_duplicates_removed = total_input_listings - total_output_listings
-
-# Total listings with no weights
-if "ITEM WEIGHT (pounds)" in combined_df.columns:
-    listings_no_weights = combined_df["ITEM WEIGHT (pounds)"].isnull().sum()
-else:
-    listings_no_weights = 0
-
-# Display the metrics
-st.markdown(f"""
-- **Total Listings in Input Files:** {total_input_listings}
-- **Total Listings in Output File:** {total_output_listings}
-- **Total Duplicates Removed:** {total_duplicates_removed}
-- **Listings with No Weights (Red Highlighted Rows):** {listings_no_weights}
-""")
-
-# Step 12: Export final DataFrame with Conditional Formatting and Formulas
+        # Step 12: Export final DataFrame with Conditional Formatting and Formulas
 st.write("### Download Consolidated File")
 
-        # Ensure combined_df is not empty
-        if combined_df.empty:
-            st.error("The combined_df is empty. Ensure input files are uploaded and processed correctly.")
-            st.stop()
+if combined_df.empty:
+    st.error("The combined DataFrame is empty. Ensure input files are uploaded and processed correctly.")
+    st.stop()
 
-        # Ensure ITEM WEIGHT (pounds) column exists
-        if "ITEM WEIGHT (pounds)" not in combined_df.columns:
-            st.error("ITEM WEIGHT (pounds) column is missing. Ensure the TITLE column exists and is processed correctly.")
-            st.stop()
-        else:
-            # Move rows with missing weights to the end
-            st.write("### Reordering Rows with Missing Weights")
-            combined_df["Missing Weight"] = combined_df["ITEM WEIGHT (pounds)"].isnull()
-            combined_df = combined_df.sort_values(by="Missing Weight", ascending=True).drop(columns=["Missing Weight"])
-            st.success("Rows with missing weights have been moved to the bottom.")
+# Ensure ITEM WEIGHT (pounds) column exists
+if "ITEM WEIGHT (pounds)" not in combined_df.columns:
+    st.error("ITEM WEIGHT (pounds) column is missing. Ensure the TITLE column exists and is processed correctly.")
+    st.stop()
+else:
+    # Move rows with missing weights to the end
+    st.write("### Reordering Rows with Missing Weights")
+    combined_df["Missing Weight"] = combined_df["ITEM WEIGHT (pounds)"].isnull()
+    combined_df = combined_df.sort_values(by="Missing Weight", ascending=True).drop(columns=["Missing Weight"])
+    st.success("Rows with missing weights have been moved to the bottom.")
 
-        # Define a styling function for highlighting rows
-        def highlight_missing_weights(row):
-            if pd.isnull(row["ITEM WEIGHT (pounds)"]):
-                return ["background-color: #FFCCCC"] * len(row)
-            return [""] * len(row)
+# Define a styling function for highlighting rows
+def highlight_missing_weights(row):
+    if pd.isnull(row["ITEM WEIGHT (pounds)"]):
+        return ["background-color: #FFCCCC"] * len(row)
+    return [""] * len(row)
 
-        # Format numeric columns to 2 decimal places
-        numeric_columns = [
-            "COST_PRICE",
-            "HANDLING COST",
-            "ITEM WEIGHT (pounds)",
-            "SHIPPING COST",
-            "RETAIL PRICE",
-            "MIN PRICE",
-            "MAX PRICE",
-        ]
+# Format numeric columns to 2 decimal places
+numeric_columns = [
+    "COST_PRICE",
+    "HANDLING COST",
+    "ITEM WEIGHT (pounds)",
+    "SHIPPING COST",
+    "RETAIL PRICE",
+    "MIN PRICE",
+    "MAX PRICE",
+]
 
-        # Apply formatting for numeric columns
-        styled_df = (
-            combined_df.style.apply(highlight_missing_weights, axis=1)
-            .format({col: "{:.2f}" for col in numeric_columns})
-        )
+# Apply formatting for numeric columns
+styled_df = (
+    combined_df.style.apply(highlight_missing_weights, axis=1)
+    .format({col: "{:.2f}" for col in numeric_columns})
+)
 
-        # Display the styled DataFrame with formatting
-        st.write("### Updated Final Data Preview with Highlights and Formatting")
-        st.dataframe(styled_df)
+# Display the styled DataFrame with formatting
+st.write("### Updated Final Data Preview with Highlights and Formatting")
+st.dataframe(styled_df)
 
-        if st.button("Export to Excel"):
-            buffer = BytesIO()
-            with pd.ExcelWriter(buffer, engine="openpyxl") as writer:
-                combined_df.to_excel(writer, index=False, sheet_name="Consolidated Data")
-                worksheet = writer.sheets["Consolidated Data"]
+if st.button("Export to Excel"):
+    buffer = BytesIO()
+    with pd.ExcelWriter(buffer, engine="openpyxl") as writer:
+        combined_df.to_excel(writer, index=False, sheet_name="Consolidated Data")
+        worksheet = writer.sheets["Consolidated Data"]
 
-                # Apply conditional formatting and add formulas for missing weights
-                red_fill = PatternFill(start_color="FFCCCC", end_color="FFCCCC", fill_type="solid")
-                for row_index, weight in enumerate(combined_df["ITEM WEIGHT (pounds)"], start=2):  # Start from row 2
-                    if pd.isnull(weight):
-                        # Highlight row with red fill
-                        for col_index in range(1, len(combined_df.columns) + 1):
-                            worksheet.cell(row=row_index, column=col_index).fill = red_fill
+        # Apply conditional formatting and add formulas for missing weights
+        red_fill = PatternFill(start_color="FFCCCC", end_color="FFCCCC", fill_type="solid")
+        for row_index, weight in enumerate(combined_df["ITEM WEIGHT (pounds)"], start=2):  # Start from row 2
+            if pd.isnull(weight):
+                # Highlight row with red fill
+                for col_index in range(1, len(combined_df.columns) + 1):
+                    worksheet.cell(row=row_index, column=col_index).fill = red_fill
 
-                        # Add formulas for SHIPPING COST, RETAIL PRICE, MIN PRICE, MAX PRICE
-                        worksheet.cell(row=row_index, column=6).value = f"=IF(E{row_index}>0, E{row_index}*1.5, \"\")"  # Example SHIPPING COST formula
-                        worksheet.cell(row=row_index, column=8).value = f"=IF(E{row_index}>0, (E{row_index}+F{row_index}+G{row_index})*1.35, \"\")"  # RETAIL PRICE formula
-                        worksheet.cell(row=row_index, column=9).value = f"=H{row_index}"  # MIN PRICE formula
-                        worksheet.cell(row=row_index, column=10).value = f"=H{row_index}*1.35"  # MAX PRICE formula
+                # Add formulas for SHIPPING COST, RETAIL PRICE, MIN PRICE, MAX PRICE
+                worksheet.cell(row=row_index, column=6).value = f"=IF(E{row_index}>0, E{row_index}*1.5, \"\")"  # Example SHIPPING COST formula
+                worksheet.cell(row=row_index, column=8).value = f"=IF(E{row_index}>0, (E{row_index}+F{row_index}+G{row_index})*1.35, \"\")"  # RETAIL PRICE formula
+                worksheet.cell(row=row_index, column=9).value = f"=H{row_index}"  # MIN PRICE formula
+                worksheet.cell(row=row_index, column=10).value = f"=H{row_index}*1.35"  # MAX PRICE formula
 
-            # Save and download the file
-            buffer.seek(0)
-            st.download_button(
-                label="Download Excel File",
-                data=buffer.getvalue(),
-                file_name="Consolidated_Data_with_Formulas.xlsx",
-                mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-            )
+    # Save and download the file
+    buffer.seek(0)
+    st.download_button(
+        label="Download Excel File",
+        data=buffer.getvalue(),
+        file_name="Consolidated_Data_with_Formulas.xlsx",
+        mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    )
 else:
     st.info("Upload one or more Excel files to get started.")
 
