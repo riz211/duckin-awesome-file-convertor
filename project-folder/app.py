@@ -219,7 +219,7 @@ if uploaded_files:
         """)
 
 
-        # Step 12: Export final DataFrame with Conditional Formatting
+        # Step 12: Export final DataFrame with Conditional Formatting and Formulas
 st.write("### Download Consolidated File")
 
 # Step 12.1: Move rows with missing weights to the end
@@ -261,27 +261,24 @@ if st.button("Export to Excel"):
         combined_df.to_excel(writer, index=False, sheet_name="Consolidated Data")
         worksheet = writer.sheets["Consolidated Data"]
 
-        # Step 12.4: Apply conditional formatting and formulas for missing weights
+        # Step 12.4: Apply conditional formatting and add formulas for missing weights
         red_fill = PatternFill(start_color="FFCCCC", end_color="FFCCCC", fill_type="solid")
-        for row_index, weight in enumerate(combined_df["ITEM WEIGHT (pounds)"], start=2):
+        for row_index, weight in enumerate(combined_df["ITEM WEIGHT (pounds)"], start=2):  # Start from row 2
             if pd.isnull(weight):
                 # Highlight row with red fill
                 for col_index in range(1, len(combined_df.columns) + 1):
                     worksheet.cell(row=row_index, column=col_index).fill = red_fill
 
                 # Add formulas for SHIPPING COST, RETAIL PRICE, MIN PRICE, MAX PRICE
-                shipping_formula = f"IF(A{row_index}<>\"\", VLOOKUP(A{row_index}, ShippingLegend!A:C, 3, TRUE), \"\")"
-                retail_formula = f"IF(E{row_index}<>\"\", (E{row_index}+F{row_index}+G{row_index})*1.35, \"\")"
-                min_price_formula = f"IF(H{row_index}<>\"\", H{row_index}, \"\")"
-                max_price_formula = f"IF(I{row_index}<>\"\", I{row_index}*1.35, \"\")"
+                # Assuming "COST_PRICE" is column E (5th column), and so on:
+                # Columns:
+                # SHIPPING COST (F), RETAIL PRICE (H), MIN PRICE (I), MAX PRICE (J)
+                worksheet.cell(row=row_index, column=6).value = f"=IF(E{row_index}>0, E{row_index}*1.5, \"\")"  # Example SHIPPING COST formula
+                worksheet.cell(row=row_index, column=8).value = f"=IF(E{row_index}>0, (E{row_index}+F{row_index}+G{row_index})*1.35, \"\")"  # RETAIL PRICE formula
+                worksheet.cell(row=row_index, column=9).value = f"=H{row_index}"  # MIN PRICE formula
+                worksheet.cell(row=row_index, column=10).value = f"=H{row_index}*1.35"  # MAX PRICE formula
 
-                # Assign formulas to relevant cells
-                worksheet.cell(row=row_index, column=6).value = shipping_formula  # SHIPPING COST
-                worksheet.cell(row=row_index, column=8).value = retail_formula  # RETAIL PRICE
-                worksheet.cell(row=row_index, column=9).value = min_price_formula  # MIN PRICE
-                worksheet.cell(row=row_index, column=10).value = max_price_formula  # MAX PRICE
-
-    # Step 12.5: Save and download the file
+    # Save and download the file
     buffer.seek(0)
     st.download_button(
         label="Download Excel File",
@@ -291,4 +288,5 @@ if st.button("Export to Excel"):
     )
 else:
     st.info("Upload one or more Excel files to get started.")
+
 
