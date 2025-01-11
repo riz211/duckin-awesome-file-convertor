@@ -28,16 +28,27 @@ if uploaded_files:
         except Exception as e:
             st.error(f"Error reading file {uploaded_file.name}: {e}")
 
+    # Combine all sheets into a single DataFrame only if all_data has content
     if all_data:
-        # Step 3: Combine all sheets into one DataFrame
         combined_df = pd.concat(all_data, ignore_index=True)
         st.write("### Combined Data Preview (Before Renaming)")
         st.dataframe(combined_df)
 
-        # Step 3.1: Add HANDLING COST column
-        st.write("### Adding HANDLING COST Column")
-        combined_df["HANDLING COST"] = 0.75
-        st.success("HANDLING COST column added with default value 0.75.")
+        # Proceed with further processing only if combined_df is not empty
+        if not combined_df.empty:
+            # Step 3.1: Add HANDLING COST column
+            st.write("### Adding HANDLING COST Column")
+            combined_df["HANDLING COST"] = 0.75
+            st.success("HANDLING COST column added with default value 0.75.")
+
+            # Add further processing steps here...
+        else:
+            st.error("The combined DataFrame is empty after processing. Please check the uploaded files.")
+    else:
+        st.error("No valid data found in the uploaded files. Please upload files with the correct format.")
+else:
+    st.info("Upload one or more Excel files to get started.")
+
 
         # Step 4: Standardize and Rename Columns
         st.write("### Renaming Columns")
