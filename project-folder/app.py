@@ -276,7 +276,7 @@ if st.button("Export to Excel"):
                     worksheet.cell(row=row_index, column=col_index).fill = red_fill
 
                 # Add formulas to the relevant columns
-                worksheet.cell(row=row_index, column=9).value = f"=IF(D{row_index}<>\"\", VLOOKUP(D{row_index}, ShippingLegend!A:C, 3, TRUE), \"\")"  # SHIPPING COST formula
+                worksheet.cell(row=row_index, column=10).value = f"=IF(D{row_index}<>\"\", VLOOKUP(D{row_index}, ShippingLegend!A:C, 3, TRUE), \"\")"  # SHIPPING COST formula
                 worksheet.cell(row=row_index, column=11).value = f"=IF(AND(E{row_index}<>\"\", F{row_index}<>\"\", G{row_index}<>\"\"), (E{row_index}+F{row_index}+G{row_index})*1.35, \"\")"  # RETAIL PRICE formula
                 worksheet.cell(row=row_index, column=12).value = f"=K{row_index}"  # MIN PRICE formula
                 worksheet.cell(row=row_index, column=13).value = f"=IF(L{row_index}<>\"\", L{row_index}*1.35, \"\")"  # MAX PRICE formula
