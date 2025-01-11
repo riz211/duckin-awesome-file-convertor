@@ -220,62 +220,75 @@ if uploaded_files:
 
 
         # Step 12: Export final DataFrame with Conditional Formatting
-        st.write("### Download Consolidated File")
+st.write("### Download Consolidated File")
 
-       # Step 12.1: Move rows with missing weights to the end
-        st.write("### Reordering Rows with Missing Weights")
-        combined_df['Missing Weight'] = combined_df['ITEM WEIGHT (pounds)'].isnull()
-        combined_df = combined_df.sort_values(by='Missing Weight', ascending=True).drop(columns=['Missing Weight'])
-        st.success("Rows with missing weights have been moved to the bottom.")
+# Step 12.1: Move rows with missing weights to the end
+st.write("### Reordering Rows with Missing Weights")
+combined_df["Missing Weight"] = combined_df["ITEM WEIGHT (pounds)"].isnull()
+combined_df = combined_df.sort_values(by="Missing Weight", ascending=True).drop(columns=["Missing Weight"])
+st.success("Rows with missing weights have been moved to the bottom.")
 
-        # Step 12.2: Define a styling function for highlighting rows
-        def highlight_missing_weights(row):
-            if pd.isnull(row["ITEM WEIGHT (pounds)"]):
-                return ["background-color: #FFCCCC"] * len(row)
-            return [""] * len(row)
+# Step 12.2: Define a styling function for highlighting rows
+def highlight_missing_weights(row):
+    if pd.isnull(row["ITEM WEIGHT (pounds)"]):
+        return ["background-color: #FFCCCC"] * len(row)
+    return [""] * len(row)
 
-        # Step 12.4: Format numeric columns to 2 decimal places
-        numeric_columns = [
-            "COST_PRICE",
-            "HANDLING COST",
-            "ITEM WEIGHT (pounds)",
-            "SHIPPING COST",
-            "RETAIL PRICE",
-            "MIN PRICE",
-            "MAX PRICE",
-        ]
+# Step 12.3: Format numeric columns to 2 decimal places
+numeric_columns = [
+    "COST_PRICE",
+    "HANDLING COST",
+    "ITEM WEIGHT (pounds)",
+    "SHIPPING COST",
+    "RETAIL PRICE",
+    "MIN PRICE",
+    "MAX PRICE",
+]
 
-        # Apply formatting for numeric columns
-        styled_df = (
-            combined_df.style.apply(highlight_missing_weights, axis=1)
-            .format({col: "{:.2f}" for col in numeric_columns})
-        )
+# Apply formatting for numeric columns
+styled_df = (
+    combined_df.style.apply(highlight_missing_weights, axis=1)
+    .format({col: "{:.2f}" for col in numeric_columns})
+)
 
-        # Display the styled DataFrame with formatting
-        st.write("### Updated Final Data Preview with Highlights and Formatting")
-        st.dataframe(styled_df)
+# Display the styled DataFrame with formatting
+st.write("### Updated Final Data Preview with Highlights and Formatting")
+st.dataframe(styled_df)
 
+if st.button("Export to Excel"):
+    buffer = BytesIO()
+    with pd.ExcelWriter(buffer, engine="openpyxl") as writer:
+        combined_df.to_excel(writer, index=False, sheet_name="Consolidated Data")
+        worksheet = writer.sheets["Consolidated Data"]
 
+        # Step 12.4: Apply conditional formatting and formulas for missing weights
+        red_fill = PatternFill(start_color="FFCCCC", end_color="FFCCCC", fill_type="solid")
+        for row_index, weight in enumerate(combined_df["ITEM WEIGHT (pounds)"], start=2):
+            if pd.isnull(weight):
+                # Highlight row with red fill
+                for col_index in range(1, len(combined_df.columns) + 1):
+                    worksheet.cell(row=row_index, column=col_index).fill = red_fill
 
+                # Add formulas for SHIPPING COST, RETAIL PRICE, MIN PRICE, MAX PRICE
+                shipping_formula = f"IF(A{row_index}<>\"\", VLOOKUP(A{row_index}, ShippingLegend!A:C, 3, TRUE), \"\")"
+                retail_formula = f"IF(E{row_index}<>\"\", (E{row_index}+F{row_index}+G{row_index})*1.35, \"\")"
+                min_price_formula = f"IF(H{row_index}<>\"\", H{row_index}, \"\")"
+                max_price_formula = f"IF(I{row_index}<>\"\", I{row_index}*1.35, \"\")"
 
-        if st.button("Export to Excel"):
-            buffer = BytesIO()
-            with pd.ExcelWriter(buffer, engine="openpyxl") as writer:
-                combined_df.to_excel(writer, index=False, sheet_name="Consolidated Data")
-                worksheet = writer.sheets["Consolidated Data"]
+                # Assign formulas to relevant cells
+                worksheet.cell(row=row_index, column=6).value = shipping_formula  # SHIPPING COST
+                worksheet.cell(row=row_index, column=8).value = retail_formula  # RETAIL PRICE
+                worksheet.cell(row=row_index, column=9).value = min_price_formula  # MIN PRICE
+                worksheet.cell(row=row_index, column=10).value = max_price_formula  # MAX PRICE
 
-                red_fill = PatternFill(start_color="FFCCCC", end_color="FFCCCC", fill_type="solid")
-                for row_index, weight in enumerate(combined_df["ITEM WEIGHT (pounds)"], start=2):
-                    if pd.isnull(weight):
-                        for col_index in range(1, len(combined_df.columns) + 1):
-                            worksheet.cell(row=row_index, column=col_index).fill = red_fill
-
-            buffer.seek(0)
-            st.download_button(
-                label="Download Excel File",
-                data=buffer.getvalue(),
-                file_name="Consolidated_Data.xlsx",
-                mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-            )
+    # Step 12.5: Save and download the file
+    buffer.seek(0)
+    st.download_button(
+        label="Download Excel File",
+        data=buffer.getvalue(),
+        file_name="Consolidated_Data_with_Formulas.xlsx",
+        mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    )
 else:
     st.info("Upload one or more Excel files to get started.")
+
