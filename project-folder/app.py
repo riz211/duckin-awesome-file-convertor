@@ -194,3 +194,93 @@ if uploaded_files:
         # Step 11.1: Calculate and Display Metrics
         st.write("### Metrics Summary")
         total_input_listings = len(pd.concat(all_data, ignore_index
+        ))
+        total_output_listings = len(combined_df)
+        total_duplicates_removed = total_input_listings - total_output_listings
+        listings_no_weights = combined_df["ITEM WEIGHT (pounds)"].isnull().sum()
+
+        # Display metrics
+        st.markdown(f"""
+        - **Total Listings in Input Files:** {total_input_listings}
+        - **Total Listings in Output File:** {total_output_listings}
+        - **Total Duplicates Removed:** {total_duplicates_removed}
+        - **Listings with No Weights (Red Highlighted Rows):** {listings_no_weights}
+        """)
+
+        # Step 12: Export final DataFrame with Conditional Formatting and Formulas
+        st.write("### Download Consolidated File")
+
+        # Ensure combined_df is not empty
+        if combined_df.empty:
+            st.error("The combined_df is empty. Ensure input files are uploaded and processed correctly.")
+            st.stop()
+
+        # Ensure ITEM WEIGHT (pounds) column exists
+        if "ITEM WEIGHT (pounds)" not in combined_df.columns:
+            st.error("ITEM WEIGHT (pounds) column is missing. Ensure the TITLE column exists and is processed correctly.")
+            st.stop()
+        else:
+            # Move rows with missing weights to the end
+            st.write("### Reordering Rows with Missing Weights")
+            combined_df["Missing Weight"] = combined_df["ITEM WEIGHT (pounds)"].isnull()
+            combined_df = combined_df.sort_values(by="Missing Weight", ascending=True).drop(columns=["Missing Weight"])
+            st.success("Rows with missing weights have been moved to the bottom.")
+
+        # Define a styling function for highlighting rows
+        def highlight_missing_weights(row):
+            if pd.isnull(row["ITEM WEIGHT (pounds)"]):
+                return ["background-color: #FFCCCC"] * len(row)
+            return [""] * len(row)
+
+        # Format numeric columns to 2 decimal places
+        numeric_columns = [
+            "COST_PRICE",
+            "HANDLING COST",
+            "ITEM WEIGHT (pounds)",
+            "SHIPPING COST",
+            "RETAIL PRICE",
+            "MIN PRICE",
+            "MAX PRICE",
+        ]
+
+        # Apply formatting for numeric columns
+        styled_df = (
+            combined_df.style.apply(highlight_missing_weights, axis=1)
+            .format({col: "{:.2f}" for col in numeric_columns})
+        )
+
+        # Display the styled DataFrame with formatting
+        st.write("### Updated Final Data Preview with Highlights and Formatting")
+        st.dataframe(styled_df)
+
+        if st.button("Export to Excel"):
+            buffer = BytesIO()
+            with pd.ExcelWriter(buffer, engine="openpyxl") as writer:
+                combined_df.to_excel(writer, index=False, sheet_name="Consolidated Data")
+                worksheet = writer.sheets["Consolidated Data"]
+
+                # Apply conditional formatting and add formulas for missing weights
+                red_fill = PatternFill(start_color="FFCCCC", end_color="FFCCCC", fill_type="solid")
+                for row_index, weight in enumerate(combined_df["ITEM WEIGHT (pounds)"], start=2):  # Start from row 2
+                    if pd.isnull(weight):
+                        # Highlight row with red fill
+                        for col_index in range(1, len(combined_df.columns) + 1):
+                            worksheet.cell(row=row_index, column=col_index).fill = red_fill
+
+                        # Add formulas for SHIPPING COST, RETAIL PRICE, MIN PRICE, MAX PRICE
+                        worksheet.cell(row=row_index, column=6).value = f"=IF(E{row_index}>0, E{row_index}*1.5, \"\")"  # Example SHIPPING COST formula
+                        worksheet.cell(row=row_index, column=8).value = f"=IF(E{row_index}>0, (E{row_index}+F{row_index}+G{row_index})*1.35, \"\")"  # RETAIL PRICE formula
+                        worksheet.cell(row=row_index, column=9).value = f"=H{row_index}"  # MIN PRICE formula
+                        worksheet.cell(row=row_index, column=10).value = f"=H{row_index}*1.35"  # MAX PRICE formula
+
+            # Save and download the file
+            buffer.seek(0)
+            st.download_button(
+                label="Download Excel File",
+                data=buffer.getvalue(),
+                file_name="Consolidated_Data_with_Formulas.xlsx",
+                mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+            )
+else:
+    st.info("Upload one or more Excel files to get started.")
+
