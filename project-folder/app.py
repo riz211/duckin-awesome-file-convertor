@@ -253,13 +253,13 @@ else:
     # Step 12.1: Move rows with missing weights to the end
     st.write("### Reordering Rows with Missing Weights")
     if not combined_df.empty:  # Check if combined_df exists and is not empty
-    if "ITEM WEIGHT (pounds)" in combined_df.columns:
-        combined_df["Missing Weight"] = combined_df["ITEM WEIGHT (pounds)"].isnull()
-        st.write("Missing weights flagged successfully.")
+        if "ITEM WEIGHT (pounds)" in combined_df.columns:
+            combined_df["Missing Weight"] = combined_df["ITEM WEIGHT (pounds)"].isnull()
+            st.write("Missing weights flagged successfully.")
     else:
         st.error("ITEM WEIGHT (pounds) column is missing.")
-else:
-    st.error("The DataFrame is not defined or is empty. Please upload files to process.")
+    else:
+        st.error("The DataFrame is not defined or is empty. Please upload files to process.")
 
     combined_df = combined_df.sort_values(by="Missing Weight", ascending=True).drop(columns=["Missing Weight"])
     st.success("Rows with missing weights have been moved to the bottom.")
