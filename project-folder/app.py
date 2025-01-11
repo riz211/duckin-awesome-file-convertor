@@ -252,44 +252,38 @@ if uploaded_files:
         st.write("### Updated Final Data Preview with Highlights and Formatting")
         st.dataframe(styled_df)
 
-
-
-
 if st.button("Export to Excel"):
     buffer = BytesIO()
     with pd.ExcelWriter(buffer, engine="openpyxl") as writer:
         # Write the main DataFrame to the first sheet
         combined_df.to_excel(writer, index=False, sheet_name="Consolidated Data")
-
-        # Embed the shipping legend as a separate sheet
-        if shipping_legend is not None:
-            shipping_legend.to_excel(writer, index=False, sheet_name="ShippingLegend")
-
-        # Access the "Consolidated Data" worksheet
         worksheet = writer.sheets["Consolidated Data"]
 
-        # Define a red fill style for missing weights
+        # Embed the shipping legend into a separate sheet
+        if shipping_legend is not None:
+            shipping_legend.to_excel(writer, index=False, sheet_name="ShippingLegend")
+        
+        # Add red highlights and formulas for rows with missing weights
         red_fill = PatternFill(start_color="FFCCCC", end_color="FFCCCC", fill_type="solid")
-
-        # Iterate over rows and add formulas for missing weights
-        for row_index, weight in enumerate(combined_df["ITEM WEIGHT (pounds)"], start=2):  # Start from row 2 (Excel row 2)
+        for row_index, weight in enumerate(combined_df["ITEM WEIGHT (pounds)"], start=2):
             if pd.isnull(weight):
-                # Highlight the row in red
+                # Highlight row with red fill
                 for col_index in range(1, len(combined_df.columns) + 1):
                     worksheet.cell(row=row_index, column=col_index).fill = red_fill
 
-                # Add formulas to the relevant columns
-                worksheet.cell(row=row_index, column=6).value = f"=IF(D{row_index}<>\"\", VLOOKUP(D{row_index}, ShippingLegend!A:C, 3, TRUE), \"\")"  # SHIPPING COST formula
-                worksheet.cell(row=row_index, column=8).value = f"=IF(AND(E{row_index}<>\"\", F{row_index}<>\"\", G{row_index}<>\"\"), (E{row_index}+F{row_index}+G{row_index})*1.35, \"\")"  # RETAIL PRICE formula
-                worksheet.cell(row=row_index, column=9).value = f"=H{row_index}"  # MIN PRICE formula
-                worksheet.cell(row=row_index, column=10).value = f"=IF(H{row_index}<>\"\", H{row_index}*1.35, \"\")"  # MAX PRICE formula
+                # Add formulas for missing weights
+                worksheet.cell(row=row_index, column=6).value = 0.75  # HANDLING COST default
+                worksheet.cell(row=row_index, column=7).value = f"=IF(A{row_index}<>\"\", VLOOKUP(A{row_index}, ShippingLegend!A:C, 3, FALSE), \"\")"  # SHIPPING COST
+                worksheet.cell(row=row_index, column=8).value = f"=IF(E{row_index}<>\"\", (E{row_index} + F{row_index} + G{row_index}) * 1.35, \"\")"  # RETAIL PRICE
+                worksheet.cell(row=row_index, column=9).value = f"=H{row_index}"  # MIN PRICE
+                worksheet.cell(row=row_index, column=10).value = f"=H{row_index} * 1.35"  # MAX PRICE
 
-    # Save the updated Excel file
+    # Save and download the file
     buffer.seek(0)
     st.download_button(
         label="Download Excel File",
         data=buffer.getvalue(),
-        file_name="Consolidated_Data_with_Embedded_Legend.xlsx",
+        file_name="Consolidated_Data_with_Formulas_Embedded_Legend.xlsx",
         mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
     )
 
