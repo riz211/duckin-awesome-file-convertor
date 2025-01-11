@@ -104,7 +104,7 @@ if uploaded_files:
 
         if "ITEM WEIGHT (pounds)" in combined_df.columns:
             combined_df["Missing Weight"] = combined_df["ITEM WEIGHT (pounds)"].isnull()
-        st.write("Missing weights have been flagged successfully.")
+            st.write("Missing weights have been flagged successfully.")
         else:
             st.error("ITEM WEIGHT (pounds) column is missing.")
 
