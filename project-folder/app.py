@@ -255,7 +255,7 @@ if uploaded_files:
 
 
 
-        if st.button("Export to Excel"):
+if st.button("Export to Excel"):
     buffer = BytesIO()
     with pd.ExcelWriter(buffer, engine="openpyxl") as writer:
         # Write the main DataFrame to the first sheet
