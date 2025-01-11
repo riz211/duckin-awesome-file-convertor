@@ -192,53 +192,51 @@ if shipping_legend is not None and {"Weight Range Min (lb)", "Weight Range Max (
 else:
     st.error("Shipping legend file is missing required columns: 'Weight Range Min (lb)', 'Weight Range Max (lb)', 'SHIPPING COST'.")
 
+# Step 10.1: Add RETAIL PRICE column
+if all(col in combined_df.columns for col in ["COST_PRICE", "SHIPPING COST", "HANDLING COST"]):
+    combined_df["RETAIL PRICE"] = combined_df.apply(
+        lambda row: round(
+            (row["COST_PRICE"] + row["SHIPPING COST"] + row["HANDLING COST"]) * 1.35, 2
+        ) if not (pd.isnull(row["COST_PRICE"]) or pd.isnull(row["SHIPPING COST"]) or pd.isnull(row["HANDLING COST"])) else None,
+        axis=1
+    )
 
-        # Step 10.1: Add RETAIL PRICE column
-        if all(col in combined_df.columns for col in ["COST_PRICE", "SHIPPING COST", "HANDLING COST"]):
-            combined_df["RETAIL PRICE"] = combined_df.apply(
-                lambda row: round(
-                    (row["COST_PRICE"] + row["SHIPPING COST"] + row["HANDLING COST"]) * 1.35, 2
-                ) if not (pd.isnull(row["COST_PRICE"]) or pd.isnull(row["SHIPPING COST"]) or pd.isnull(row["HANDLING COST"])) else None,
-                axis=1
-            )
+# Step 10.2: Add MIN PRICE and MAX PRICE columns
+if all(col in combined_df.columns for col in ["SHIPPING COST", "ITEM WEIGHT (pounds)", "RETAIL PRICE"]):
+    combined_df["MIN PRICE"] = combined_df["RETAIL PRICE"]
+    combined_df["MAX PRICE"] = combined_df["RETAIL PRICE"].apply(lambda x: round(x * 1.35, 2) if x is not None else None)
 
-        # Step 10.2: Add MIN PRICE and MAX PRICE columns
-        if all(col in combined_df.columns for col in ["SHIPPING COST", "ITEM WEIGHT (pounds)", "RETAIL PRICE"]):
-            combined_df["MIN PRICE"] = combined_df["RETAIL PRICE"]
-            combined_df["MAX PRICE"] = combined_df["RETAIL PRICE"].apply(lambda x: round(x * 1.35, 2) if x is not None else None)
+# Step 10.3: Remove rows with "Great Value"
+combined_df = combined_df[~combined_df["TITLE"].str.contains("Great Value", case=False, na=False)]
 
-        # Step 10.3: Remove rows with "Great Value"
-        combined_df = combined_df[~combined_df["TITLE"].str.contains("Great Value", case=False, na=False)]
+# Step 11: Remove duplicate rows
+combined_df.drop_duplicates(inplace=True)
 
-        # Step 11: Remove duplicate rows
-        combined_df.drop_duplicates(inplace=True)
+# Step 11: Remove duplicate rows
+combined_df.drop_duplicates(inplace=True)
 
-        # Step 11: Remove duplicate rows
-        combined_df.drop_duplicates(inplace=True)
+# Step 11.1: Calculate and Display Metrics
+st.write("### Metrics Summary")
 
-        # Step 11.1: Calculate and Display Metrics
-        st.write("### Metrics Summary")
+# Total number of listings in the input files
+total_input_listings = len(pd.concat(all_data, ignore_index=True))
 
-        # Total number of listings in the input files
-        total_input_listings = len(pd.concat(all_data, ignore_index=True))
+# Total number of listings in the output file
+total_output_listings = len(combined_df)
 
-        # Total number of listings in the output file
-        total_output_listings = len(combined_df)
+# Total duplicates removed
+total_duplicates_removed = total_input_listings - total_output_listings
 
-        # Total duplicates removed
-        total_duplicates_removed = total_input_listings - total_output_listings
+# Total listings with no weights
+listings_no_weights = combined_df["ITEM WEIGHT (pounds)"].isnull().sum()
 
-        # Total listings with no weights
-        listings_no_weights = combined_df["ITEM WEIGHT (pounds)"].isnull().sum()
-
-        # Display the metrics
-        st.markdown(f"""
-        - **Total Listings in Input Files:** {total_input_listings}
-        - **Total Listings in Output File:** {total_output_listings}
-        - **Total Duplicates Removed:** {total_duplicates_removed}
-        - **Listings with No Weights (Red Highlighted Rows):** {listings_no_weights}
-        """)
-
+# Display the metrics
+st.markdown(f"""
+- **Total Listings in Input Files:** {total_input_listings}
+- **Total Listings in Output File:** {total_output_listings}
+- **Total Duplicates Removed:** {total_duplicates_removed}
+- **Listings with No Weights (Red Highlighted Rows):** {listings_no_weights}
+""")
 
 # Step 12: Export final DataFrame with Conditional Formatting and Formulas
 st.write("### Download Consolidated File")
@@ -259,21 +257,20 @@ if uploaded_files:
         st.stop()
 else:
     st.info("Please upload one or more Excel files to start processing.")
-    
-    # Step 12.1: Move rows with missing weights to the end
-    st.write("### Reordering Rows with Missing Weights")
-    if not combined_df.empty:  # Check if combined_df exists and is not empty
-        if "ITEM WEIGHT (pounds)" in combined_df.columns:
-            combined_df["Missing Weight"] = combined_df["ITEM WEIGHT (pounds)"].isnull()
-            st.write("Missing weights flagged successfully.")
-        else:
-            st.error("ITEM WEIGHT (pounds) column is missing.")
+
+# Step 12.1: Move rows with missing weights to the end
+st.write("### Reordering Rows with Missing Weights")
+if not combined_df.empty:  # Check if combined_df exists and is not empty
+    if "ITEM WEIGHT (pounds)" in combined_df.columns:
+        combined_df["Missing Weight"] = combined_df["ITEM WEIGHT (pounds)"].isnull()
+        st.write("Missing weights flagged successfully.")
     else:
-        st.error("The DataFrame is not defined or is empty. Please upload files to process.")
+        st.error("ITEM WEIGHT (pounds) column is missing.")
+else:
+    st.error("The DataFrame is not defined or is empty. Please upload files to process.")
 
-    combined_df = combined_df.sort_values(by="Missing Weight", ascending=True).drop(columns=["Missing Weight"])
-    st.success("Rows with missing weights have been moved to the bottom.")
-
+combined_df = combined_df.sort_values(by="Missing Weight", ascending=True).drop(columns=["Missing Weight"])
+st.success("Rows with missing weights have been moved to the bottom.")
 
 # Step 12.2: Define a styling function for highlighting rows
 def highlight_missing_weights(row):
