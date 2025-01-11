@@ -224,7 +224,7 @@ st.markdown(f"""
 """)
 
         # Step 12: Export final DataFrame with Conditional Formatting and Formulas
-        st.write("### Download Consolidated File")
+            st.write("### Download Consolidated File")
 
         # Ensure combined_df is not empty
         if combined_df.empty:
