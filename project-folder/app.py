@@ -5,6 +5,9 @@ import re
 from openpyxl.styles import PatternFill
 import os
 
+# Initialize an empty DataFrame to prevent errors before file upload
+combined_df = pd.DataFrame()
+
 # App title
 st.title("Fuckin' Awesome File Convertor")
 
@@ -73,12 +76,11 @@ if uploaded_files:
         st.write("### Formatting UPC/ISBN Column")
         if "UPC/ISBN" in combined_df.columns:
             combined_df["UPC/ISBN"] = (
-            combined_df["UPC/ISBN"]
-            .apply(lambda x: str(int(float(x))) if pd.notnull(x) else "")  # Convert to integer, then string
-            .str.zfill(12)  # Add leading zeros to ensure 12 digits
-        )
-        st.success("UPC/ISBN column formatted to have a minimum of 12 digits as a string.")
-
+                combined_df["UPC/ISBN"]
+                .apply(lambda x: str(int(float(x))) if pd.notnull(x) else "")  # Convert to integer, then string
+                .str.zfill(12)  # Add leading zeros to ensure 12 digits
+            )
+            st.success("UPC/ISBN column formatted to have a minimum of 12 digits as a string.")
 
         # Step 7: Format COST_PRICE column
         st.write("### Formatting COST_PRICE Column")
@@ -106,29 +108,27 @@ if uploaded_files:
             """
             try:
                 # Extract the weight (e.g., "8 oz", "10 fl oz", etc.)
-                match_weight = re.search(r"(\d+(\.\d+)?)\s*(?:oz|ounces|ounce|fl. oz.|fluid ounce|fl oz|fluid ounces)", title, re.IGNORECASE)
+                match_weight = re.search(
+                    r"(\d+(\.\d+)?)\s*(?:oz|ounces|ounce|fl. oz.|fluid ounce|fl oz|fluid ounces)",
+                    title, re.IGNORECASE)
                 single_unit_weight = float(match_weight.group(1)) if match_weight else None
 
                 # Extract the pack size (e.g., "2 pack", "pack of 3", etc.)
                 match_pack = re.search(r"(?:\b(\d+)\s*pack\b|\bpack of\s*(\d+))", title, re.IGNORECASE)
-                pack_size = int(match_pack.group(1) or match_pack.group(2)) if match_pack else 1  # Default to 1 if no pack
+                pack_size = int(match_pack.group(1) or match_pack.group(2)) if match_pack else 1
 
                 if single_unit_weight is not None:
-                    # Add 6 oz or 10 oz based on the unit type and calculate the total weight
                     if match_weight and "fl oz" in match_weight.group(0).lower():
                         single_unit_weight += 10  # Add 10 oz for "fl oz"
                     else:
                         single_unit_weight += 6  # Add 6 oz for "oz" or "ounces"
 
-                    # Calculate total weight for the pack and convert to pounds
                     total_weight = (single_unit_weight * pack_size) / 16  # Convert oz to pounds
                     return round(total_weight, 2)
 
             except Exception as e:
-                # Log the error for debugging
                 st.error(f"Error processing title '{title}': {e}")
 
-            # Return None if no weight or pack size is found
             return None
 
         # Apply the function to the TITLE column
@@ -140,7 +140,6 @@ if uploaded_files:
 
         # Step 9.1: Highlight rows with missing weights
         st.write("### Highlighting Rows with Missing ITEM WEIGHT (pounds)")
-
 
         # Step 10: Add SHIPPING COST column
         st.write("### Adding SHIPPING COST Column")
@@ -192,112 +191,6 @@ if uploaded_files:
         # Step 11: Remove duplicate rows
         combined_df.drop_duplicates(inplace=True)
 
-        # Step 11: Remove duplicate rows
-        combined_df.drop_duplicates(inplace=True)
-
         # Step 11.1: Calculate and Display Metrics
         st.write("### Metrics Summary")
-
-        # Total number of listings in the input files
-        total_input_listings = len(pd.concat(all_data, ignore_index=True))
-
-        # Total number of listings in the output file
-        total_output_listings = len(combined_df)
-
-        # Total duplicates removed
-        total_duplicates_removed = total_input_listings - total_output_listings
-
-        # Total listings with no weights
-        listings_no_weights = combined_df["ITEM WEIGHT (pounds)"].isnull().sum()
-
-        # Display the metrics
-        st.markdown(f"""
-        - **Total Listings in Input Files:** {total_input_listings}
-        - **Total Listings in Output File:** {total_output_listings}
-        - **Total Duplicates Removed:** {total_duplicates_removed}
-        - **Listings with No Weights (Red Highlighted Rows):** {listings_no_weights}
-        """)
-
-
-        # Step 12: Export final DataFrame with Conditional Formatting and Formulas
-st.write("### Download Consolidated File")
-
-# Ensure combined_df is not empty
-if combined_df.empty:
-    st.error("The combined_df is empty. Ensure input files are uploaded and processed correctly.")
-    st.stop()
-
-# Ensure ITEM WEIGHT (pounds) column exists
-if "ITEM WEIGHT (pounds)" not in combined_df.columns:
-    st.error("ITEM WEIGHT (pounds) column is missing. Ensure the TITLE column exists and is processed correctly.")
-    st.stop()
-else:
-    # Step 12.1: Move rows with missing weights to the end
-    st.write("### Reordering Rows with Missing Weights")
-    combined_df["Missing Weight"] = combined_df["ITEM WEIGHT (pounds)"].isnull()
-    combined_df = combined_df.sort_values(by="Missing Weight", ascending=True).drop(columns=["Missing Weight"])
-    st.success("Rows with missing weights have been moved to the bottom.")
-
-
-# Step 12.2: Define a styling function for highlighting rows
-def highlight_missing_weights(row):
-    if pd.isnull(row["ITEM WEIGHT (pounds)"]):
-        return ["background-color: #FFCCCC"] * len(row)
-    return [""] * len(row)
-
-# Step 12.3: Format numeric columns to 2 decimal places
-numeric_columns = [
-    "COST_PRICE",
-    "HANDLING COST",
-    "ITEM WEIGHT (pounds)",
-    "SHIPPING COST",
-    "RETAIL PRICE",
-    "MIN PRICE",
-    "MAX PRICE",
-]
-
-# Apply formatting for numeric columns
-styled_df = (
-    combined_df.style.apply(highlight_missing_weights, axis=1)
-    .format({col: "{:.2f}" for col in numeric_columns})
-)
-
-# Display the styled DataFrame with formatting
-st.write("### Updated Final Data Preview with Highlights and Formatting")
-st.dataframe(styled_df)
-
-if st.button("Export to Excel"):
-    buffer = BytesIO()
-    with pd.ExcelWriter(buffer, engine="openpyxl") as writer:
-        combined_df.to_excel(writer, index=False, sheet_name="Consolidated Data")
-        worksheet = writer.sheets["Consolidated Data"]
-
-        # Step 12.4: Apply conditional formatting and add formulas for missing weights
-        red_fill = PatternFill(start_color="FFCCCC", end_color="FFCCCC", fill_type="solid")
-        for row_index, weight in enumerate(combined_df["ITEM WEIGHT (pounds)"], start=2):  # Start from row 2
-            if pd.isnull(weight):
-                # Highlight row with red fill
-                for col_index in range(1, len(combined_df.columns) + 1):
-                    worksheet.cell(row=row_index, column=col_index).fill = red_fill
-
-                # Add formulas for SHIPPING COST, RETAIL PRICE, MIN PRICE, MAX PRICE
-                # Assuming "COST_PRICE" is column E (5th column), and so on:
-                # Columns:
-                # SHIPPING COST (F), RETAIL PRICE (H), MIN PRICE (I), MAX PRICE (J)
-                worksheet.cell(row=row_index, column=6).value = f"=IF(E{row_index}>0, E{row_index}*1.5, \"\")"  # Example SHIPPING COST formula
-                worksheet.cell(row=row_index, column=8).value = f"=IF(E{row_index}>0, (E{row_index}+F{row_index}+G{row_index})*1.35, \"\")"  # RETAIL PRICE formula
-                worksheet.cell(row=row_index, column=9).value = f"=H{row_index}"  # MIN PRICE formula
-                worksheet.cell(row=row_index, column=10).value = f"=H{row_index}*1.35"  # MAX PRICE formula
-
-    # Save and download the file
-    buffer.seek(0)
-    st.download_button(
-        label="Download Excel File",
-        data=buffer.getvalue(),
-        file_name="Consolidated_Data_with_Formulas.xlsx",
-        mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-    )
-else:
-    st.info("Upload one or more Excel files to get started.")
-
-
+        total_input_listings = len(pd.concat(all_data, ignore_index
