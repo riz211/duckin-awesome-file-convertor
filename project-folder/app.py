@@ -93,7 +93,7 @@ if "UPC/ISBN" in combined_df.columns:
 st.success("UPC/ISBN column formatted to have a minimum of 12 digits as a string.")
 
 
-        # Step 7: Format COST_PRICE column
+# Step 7: Format COST_PRICE column
         st.write("### Formatting COST_PRICE Column")
         if "COST_PRICE" in combined_df.columns:
             combined_df["COST_PRICE"] = (
