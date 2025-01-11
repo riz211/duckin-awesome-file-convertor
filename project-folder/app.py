@@ -222,19 +222,22 @@ if uploaded_files:
 # Step 12: Export final DataFrame with Conditional Formatting and Formulas
 st.write("### Download Consolidated File")
 
-# Ensure combined_df is not empty
-if combined_df.empty:
-    st.error("The combined DataFrame is empty. Ensure input files are uploaded and processed correctly.")
-    st.stop()
-
-# Ensure ITEM WEIGHT (pounds) column exists
-if "ITEM WEIGHT (pounds)" not in combined_df.columns:
-    st.error("ITEM WEIGHT (pounds) column is missing. Ensure the TITLE column exists and is processed correctly.")
-    st.stop()
-
-# If all checks pass, proceed to export
+# Check if any files were uploaded
+if uploaded_files:
+    # Ensure combined_df is populated before proceeding
+    if not combined_df.empty:
+        # Ensure ITEM WEIGHT (pounds) column exists
+        if "ITEM WEIGHT (pounds)" not in combined_df.columns:
+            st.error("ITEM WEIGHT (pounds) column is missing. Ensure the TITLE column exists and is processed correctly.")
+            st.stop()
+        else:
+            st.success("Data checks passed. Proceeding to export the file...")
+            # Proceed with export logic
+    else:
+        st.error("The combined DataFrame is empty after processing. Please check the uploaded files.")
+        st.stop()
 else:
-    st.success("Data checks passed. Proceeding to export the file...")
+    st.info("Please upload one or more Excel files to start processing.")
     
     # Step 12.1: Move rows with missing weights to the end
     st.write("### Reordering Rows with Missing Weights")
