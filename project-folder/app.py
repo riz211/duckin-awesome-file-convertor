@@ -99,6 +99,15 @@ if uploaded_files:
         # Step 9: Add ITEM WEIGHT (pounds) column
         st.write("### Adding ITEM WEIGHT (pounds) Column")
 
+        # Step 9.1: Highlight rows with missing weights
+        st.write("### Highlighting Rows with Missing ITEM WEIGHT (pounds)")
+
+        if "ITEM WEIGHT (pounds)" in combined_df.columns:
+            combined_df["Missing Weight"] = combined_df["ITEM WEIGHT (pounds)"].isnull()
+        st.write("Missing weights have been flagged successfully.")
+        else:
+        st.error("ITEM WEIGHT (pounds) column is missing.")
+
         # Function to extract weight and handle pack sizes
         def extract_weight_with_packs(title):
             """
