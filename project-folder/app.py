@@ -17,98 +17,96 @@ uploaded_files = st.file_uploader("Upload one or more Excel files", type=["xlsx"
 if uploaded_files:
     all_data = []
 
-# Step 2: Process each uploaded file
-for uploaded_file in uploaded_files:
-    try:
-        excel_file = pd.ExcelFile(uploaded_file)
-        for sheet_name in excel_file.sheet_names:
-            sheet_data = pd.read_excel(uploaded_file, sheet_name=sheet_name, usecols="B,E,G,H,I")
-            all_data.append(sheet_data)
-    except Exception as e:
-        st.error(f"Error reading file {uploaded_file.name}: {e}")
+    # Step 2: Process each uploaded file
+    for uploaded_file in uploaded_files:
+        try:
+            excel_file = pd.ExcelFile(uploaded_file)
+            for sheet_name in excel_file.sheet_names:
+                sheet_data = pd.read_excel(uploaded_file, sheet_name=sheet_name, usecols="B,E,G,H,I")
+                all_data.append(sheet_data)
+        except Exception as e:
+            st.error(f"Error reading file {uploaded_file.name}: {e}")
 
-if all_data:
-    # Step 3: Combine all sheets into one DataFrame
-    combined_df = pd.concat(all_data, ignore_index=True)
+    if all_data:
+        # Step 3: Combine all sheets into one DataFrame
+        combined_df = pd.concat(all_data, ignore_index=True)
 
-    if not combined_df.empty:  # Check if combined_df exists and is not empty
-        if "ITEM WEIGHT (pounds)" in combined_df.columns:
-            combined_df["Missing Weight"] = combined_df["ITEM WEIGHT (pounds)"].isnull()
-            st.write("Missing weights flagged successfully.")
+        if not combined_df.empty:  # Check if combined_df exists and is not empty
+            if "ITEM WEIGHT (pounds)" in combined_df.columns:
+                combined_df["Missing Weight"] = combined_df["ITEM WEIGHT (pounds)"].isnull()
+                st.write("Missing weights flagged successfully.")
+            else:
+                st.error("ITEM WEIGHT (pounds) column is missing.")
         else:
-            st.error("ITEM WEIGHT (pounds) column is missing.")
-    else:
-        st.error("The DataFrame is not defined or is empty. Please upload files to process.")
+            st.error("The DataFrame is not defined or is empty. Please upload files to process.")
 
-    # Combined DataFrame Preview
-    st.write("### Combined Data Preview (Before Renaming)")
-    st.dataframe(combined_df)
+        # Combined DataFrame Preview
+        st.write("### Combined Data Preview (Before Renaming)")
+        st.dataframe(combined_df)
 
-# Step 3.1: Add HANDLING COST column
-st.write("### Adding HANDLING COST Column")
-combined_df["HANDLING COST"] = 0.75
-st.success("HANDLING COST column added with default value 0.75.")
+        # Step 3.1: Add HANDLING COST column
+        st.write("### Adding HANDLING COST Column")
+        combined_df["HANDLING COST"] = 0.75
+        st.success("HANDLING COST column added with default value 0.75.")
 
-# Step 4: Standardize and Rename Columns
-st.write("### Renaming Columns")
-combined_df.columns = combined_df.columns.str.strip()  # Strip column headers of extra spaces
-column_mapping = {
-    "Product Details": "TITLE",
-    "Brand": "BRAND",
-    "Product ID": "SKU",
-    "UPC Code": "UPC/ISBN",
-    "Price": "COST_PRICE"
-    }
-combined_df.rename(columns=column_mapping, inplace=True)
+        # Step 4: Standardize and Rename Columns
+        st.write("### Renaming Columns")
+        combined_df.columns = combined_df.columns.str.strip()  # Strip column headers of extra spaces
+        column_mapping = {
+            "Product Details": "TITLE",
+            "Brand": "BRAND",
+            "Product ID": "SKU",
+            "UPC Code": "UPC/ISBN",
+            "Price": "COST_PRICE"
+        }
+        combined_df.rename(columns=column_mapping, inplace=True)
 
-if "COST_PRICE" not in combined_df.columns:
-    st.error("COST_PRICE column is missing. Ensure the input file has a 'Price' column.")
-else:
-    st.success("Columns renamed successfully.")
+        if "COST_PRICE" not in combined_df.columns:
+            st.error("COST_PRICE column is missing. Ensure the input file has a 'Price' column.")
+        else:
+            st.success("Columns renamed successfully.")
 
-# Step 4.1: Format SKU column to remove commas and ensure it is displayed as a string
-if "SKU" in combined_df.columns:
-    combined_df["SKU"] = combined_df["SKU"].astype(str).str.replace(",", "").str.strip()
-    st.success("SKU column formatted to remove commas.")
+        # Step 4.1: Format SKU column to remove commas and ensure it is displayed as a string
+        if "SKU" in combined_df.columns:
+            combined_df["SKU"] = combined_df["SKU"].astype(str).str.replace(",", "").str.strip()
+            st.success("SKU column formatted to remove commas.")
 
-# Step 5: Clean TITLE column
-if "TITLE" in combined_df.columns:
-    combined_df["TITLE"] = (
-        combined_df["TITLE"]
-        .str.replace(r"\(W\+\)", "", regex=True)
-        .str.replace(r"\(SP\)", "", regex=True)
-        .str.replace(r"\(P\)", "", regex=True)
-        .str.strip()
-    )
-    st.success("Unwanted patterns removed from TITLE column.")
+        # Step 5: Clean TITLE column
+        if "TITLE" in combined_df.columns:
+            combined_df["TITLE"] = (
+                combined_df["TITLE"]
+                .str.replace(r"\(W\+\)", "", regex=True)
+                .str.replace(r"\(SP\)", "", regex=True)
+                .str.replace(r"\(P\)", "", regex=True)
+                .str.strip()
+            )
+            st.success("Unwanted patterns removed from TITLE column.")
 
-# Step 6: Format UPC/ISBN column
-st.write("### Formatting UPC/ISBN Column")
-if "UPC/ISBN" in combined_df.columns:
-    combined_df["UPC/ISBN"] = (
-    combined_df["UPC/ISBN"]
-    .apply(lambda x: str(int(float(x))) if pd.notnull(x) else "")  # Convert to integer, then string
-    .str.zfill(12)  # Add leading zeros to ensure 12 digits
-)
-st.success("UPC/ISBN column formatted to have a minimum of 12 digits as a string.")
+        # Step 6: Format UPC/ISBN column
+        st.write("### Formatting UPC/ISBN Column")
+        if "UPC/ISBN" in combined_df.columns:
+            combined_df["UPC/ISBN"] = (
+                combined_df["UPC/ISBN"]
+                .apply(lambda x: str(int(float(x))) if pd.notnull(x) else "")  # Convert to integer, then string
+                .str.zfill(12)  # Add leading zeros to ensure 12 digits
+            )
+            st.success("UPC/ISBN column formatted to have a minimum of 12 digits as a string.")
 
+        # Step 7: Format COST_PRICE column
+        st.write("### Formatting COST_PRICE Column")
+        if "COST_PRICE" in combined_df.columns:
+            combined_df["COST_PRICE"] = (
+                combined_df["COST_PRICE"]
+                .astype(str)
+                .str.replace(r"[$,]", "", regex=True)  # Remove currency symbols and commas
+                .astype(float)
+                .round(2)
+            )
+            st.success("COST_PRICE column formatted to numeric with two decimal places.")
 
-# Step 7: Format COST_PRICE column
-st.write("### Formatting COST_PRICE Column")
-if "COST_PRICE" in combined_df.columns:
-    combined_df["COST_PRICE"] = (
-    combined_df["COST_PRICE"]
-    .astype(str)
-    .str.replace(r"[$,]", "", regex=True)  # Remove currency symbols and commas
-    .astype(float)
-    .round(2)
-)
-            
-st.success("COST_PRICE column formatted to numeric with two decimal places.")
-
-# Step 8: Add QUANTITY and ITEM LOCATION columns
-combined_df["QUANTITY"] = 1
-combined_df["ITEM LOCATION"] = "WALMART"
+        # Step 8: Add QUANTITY and ITEM LOCATION columns
+        combined_df["QUANTITY"] = 1
+        combined_df["ITEM LOCATION"] = "WALMART"
 
 # Step 9: Add ITEM WEIGHT (pounds) column
 st.write("### Adding ITEM WEIGHT (pounds) Column")
@@ -127,73 +125,73 @@ def extract_weight_with_packs(title):
     """
     Extract the weight and account for pack size in the TITLE.
     """
-try:
-    # Extract the weight (e.g., "8 oz", "10 fl oz", etc.)
-    match_weight = re.search(r"(\d+(\.\d+)?)\s*(?:oz|ounces|ounce|fl. oz.|fluid ounce|fl oz|fluid ounces)", title, re.IGNORECASE)
-    single_unit_weight = float(match_weight.group(1)) if match_weight else None
+    try:
+        # Extract the weight (e.g., "8 oz", "10 fl oz", etc.)
+        match_weight = re.search(r"(\d+(\.\d+)?)\s*(?:oz|ounces|ounce|fl. oz.|fluid ounce|fl oz|fluid ounces)", title, re.IGNORECASE)
+        single_unit_weight = float(match_weight.group(1)) if match_weight else None
 
-    # Extract the pack size (e.g., "2 pack", "pack of 3", etc.)
-    match_pack = re.search(r"(?:\b(\d+)\s*pack\b|\bpack of\s*(\d+))", title, re.IGNORECASE)
-    pack_size = int(match_pack.group(1) or match_pack.group(2)) if match_pack else 1  # Default to 1 if no pack
+        # Extract the pack size (e.g., "2 pack", "pack of 3", etc.)
+        match_pack = re.search(r"(?:\b(\d+)\s*pack\b|\bpack of\s*(\d+))", title, re.IGNORECASE)
+        pack_size = int(match_pack.group(1) or match_pack.group(2)) if match_pack else 1  # Default to 1 if no pack
 
-    if single_unit_weight is not None:
-        # Add 6 oz or 10 oz based on the unit type and calculate the total weight
-        if match_weight and "fl oz" in match_weight.group(0).lower():
-            single_unit_weight += 10  # Add 10 oz for "fl oz"
-        else:
-            single_unit_weight += 6  # Add 6 oz for "oz" or "ounces"
+        if single_unit_weight is not None:
+            # Add 6 oz or 10 oz based on the unit type and calculate the total weight
+            if match_weight and "fl oz" in match_weight.group(0).lower():
+                single_unit_weight += 10  # Add 10 oz for "fl oz"
+            else:
+                single_unit_weight += 6  # Add 6 oz for "oz" or "ounces"
 
-        # Calculate total weight for the pack and convert to pounds
-        total_weight = (single_unit_weight * pack_size) / 16  # Convert oz to pounds
-        return round(total_weight, 2)
+            # Calculate total weight for the pack and convert to pounds
+            total_weight = (single_unit_weight * pack_size) / 16  # Convert oz to pounds
+            return round(total_weight, 2)
 
-except Exception as e:
-    # Log the error for debugging
-    st.error(f"Error processing title '{title}': {e}")
+    except Exception as e:
+        # Log the error for debugging
+        st.error(f"Error processing title '{title}': {e}")
 
-# Return None if no weight or pack size is found
-return None
+    # Return None if no weight or pack size is found
+    return None
 
-        # Apply the function to the TITLE column
-        if "TITLE" in combined_df.columns:
-            combined_df["ITEM WEIGHT (pounds)"] = combined_df["TITLE"].apply(
-                lambda x: extract_weight_with_packs(x) if isinstance(x, str) else None
-            )
-            st.success("ITEM WEIGHT (pounds) column updated to account for pack sizes.")
+# Apply the function to the TITLE column
+if "TITLE" in combined_df.columns:
+    combined_df["ITEM WEIGHT (pounds)"] = combined_df["TITLE"].apply(
+        lambda x: extract_weight_with_packs(x) if isinstance(x, str) else None
+    )
+    st.success("ITEM WEIGHT (pounds) column updated to account for pack sizes.")
 
-        # Step 9.1: Highlight rows with missing weights
-        st.write("### Highlighting Rows with Missing ITEM WEIGHT (pounds)")
+# Step 9.1: Highlight rows with missing weights
+st.write("### Highlighting Rows with Missing ITEM WEIGHT (pounds)")
 
+# Step 10: Add SHIPPING COST column
+st.write("### Adding SHIPPING COST Column")
 
-        # Step 10: Add SHIPPING COST column
-        st.write("### Adding SHIPPING COST Column")
+shipping_legend_path = "project-folder/data/default_shipping_legend.xlsx"  # Relative path in the repository
 
-        shipping_legend_path = "project-folder/data/default_shipping_legend.xlsx"  # Relative path in the repository
+if not os.path.exists(shipping_legend_path):
+    st.error(f"The shipping legend file does not exist at the specified path: {shipping_legend_path}")
+else:
+    try:
+        shipping_legend = pd.read_excel(shipping_legend_path, engine="openpyxl")
+        st.success("Shipping legend file loaded successfully.")
+    except Exception as e:
+        st.error(f"Error reading shipping legend file: {e}")
+        shipping_legend = None
 
-        if not os.path.exists(shipping_legend_path):
-            st.error(f"The shipping legend file does not exist at the specified path: {shipping_legend_path}")
-        else:
-            try:
-                shipping_legend = pd.read_excel(shipping_legend_path, engine="openpyxl")
-                st.success("Shipping legend file loaded successfully.")
-            except Exception as e:
-                st.error(f"Error reading shipping legend file: {e}")
-                shipping_legend = None
+if shipping_legend is not None and {"Weight Range Min (lb)", "Weight Range Max (lb)", "SHIPPING COST"}.issubset(shipping_legend.columns):
+    def calculate_shipping_cost(weight, legend):
+        if pd.isnull(weight):
+            return None
+        for _, row in legend.iterrows():
+            if row["Weight Range Min (lb)"] <= weight <= row["Weight Range Max (lb)"]:
+                return row["SHIPPING COST"]
+        return None
 
-        if shipping_legend is not None and {"Weight Range Min (lb)", "Weight Range Max (lb)", "SHIPPING COST"}.issubset(shipping_legend.columns):
-            def calculate_shipping_cost(weight, legend):
-                if pd.isnull(weight):
-                    return None
-                for _, row in legend.iterrows():
-                    if row["Weight Range Min (lb)"] <= weight <= row["Weight Range Max (lb)"]:
-                        return row["SHIPPING COST"]
-                return None
+    combined_df["SHIPPING COST"] = combined_df["ITEM WEIGHT (pounds)"].apply(
+        lambda w: calculate_shipping_cost(w, shipping_legend)
+    )
+else:
+    st.error("Shipping legend file is missing required columns: 'Weight Range Min (lb)', 'Weight Range Max (lb)', 'SHIPPING COST'.")
 
-            combined_df["SHIPPING COST"] = combined_df["ITEM WEIGHT (pounds)"].apply(
-                lambda w: calculate_shipping_cost(w, shipping_legend)
-            )
-        else:
-            st.error("Shipping legend file is missing required columns: 'Weight Range Min (lb)', 'Weight Range Max (lb)', 'SHIPPING COST'.")
 
         # Step 10.1: Add RETAIL PRICE column
         if all(col in combined_df.columns for col in ["COST_PRICE", "SHIPPING COST", "HANDLING COST"]):
