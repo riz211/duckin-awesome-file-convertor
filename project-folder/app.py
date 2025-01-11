@@ -5,41 +5,41 @@ import re
 from openpyxl.styles import PatternFill
 import os
 
-combined_df = pd.DataFrame()  # Initialize an empty DataFrame
+    combined_df = pd.DataFrame()  # Initialize an empty DataFrame
 
-# App title
-st.title("Fuckin' Awesome File Convertor")
+    # App title
+    st.title("Fuckin' Awesome File Convertor")
 
-# Step 1: File uploader
-st.header("Upload Excel Files")
-uploaded_files = st.file_uploader("Upload one or more Excel files", type=["xlsx"], accept_multiple_files=True)
+    # Step 1: File uploader
+    st.header("Upload Excel Files")
+    uploaded_files = st.file_uploader("Upload one or more Excel files", type=["xlsx"], accept_multiple_files=True)
 
-if uploaded_files:
-    all_data = []
+    if uploaded_files:
+        all_data = []
 
-    # Step 2: Process each uploaded file
-    for uploaded_file in uploaded_files:
-        try:
-            excel_file = pd.ExcelFile(uploaded_file)
-            for sheet_name in excel_file.sheet_names:
-                sheet_data = pd.read_excel(uploaded_file, sheet_name=sheet_name, usecols="B,E,G,H,I")
-                all_data.append(sheet_data)
-        except Exception as e:
-            st.error(f"Error reading file {uploaded_file.name}: {e}")
+        # Step 2: Process each uploaded file
+        for uploaded_file in uploaded_files:
+            try:
+                excel_file = pd.ExcelFile(uploaded_file)
+                for sheet_name in excel_file.sheet_names:
+                    sheet_data = pd.read_excel(uploaded_file, sheet_name=sheet_name, usecols="B,E,G,H,I")
+                    all_data.append(sheet_data)
+            except Exception as e:
+                st.error(f"Error reading file {uploaded_file.name}: {e}")
 
-    if all_data:
-        # Step 3: Combine all sheets into one DataFrame
-        combined_df = pd.concat(all_data, ignore_index=True)
-    if not combined_df.empty:  # Check if combined_df exists and is not empty
-        if "ITEM WEIGHT (pounds)" in combined_df.columns:
-            combined_df["Missing Weight"] = combined_df["ITEM WEIGHT (pounds)"].isnull()
-            st.write("Missing weights flagged successfully.")
+        if all_data:
+            # Step 3: Combine all sheets into one DataFrame
+            combined_df = pd.concat(all_data, ignore_index=True)
+        if not combined_df.empty:  # Check if combined_df exists and is not empty
+            if "ITEM WEIGHT (pounds)" in combined_df.columns:
+                combined_df["Missing Weight"] = combined_df["ITEM WEIGHT (pounds)"].isnull()
+                st.write("Missing weights flagged successfully.")
+        else:
+            st.error("ITEM WEIGHT (pounds) column is missing.")
     else:
-        st.error("ITEM WEIGHT (pounds) column is missing.")
-else:
-    st.error("The DataFrame is not defined or is empty. Please upload files to process.")
-    st.write("### Combined Data Preview (Before Renaming)")
-    st.dataframe(combined_df)
+        st.error("The DataFrame is not defined or is empty. Please upload files to process.")
+        st.write("### Combined Data Preview (Before Renaming)")
+        st.dataframe(combined_df)
 
     # Step 3.1: Add HANDLING COST column
     st.write("### Adding HANDLING COST Column")
