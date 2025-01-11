@@ -94,16 +94,17 @@ st.success("UPC/ISBN column formatted to have a minimum of 12 digits as a string
 
 
 # Step 7: Format COST_PRICE column
-        st.write("### Formatting COST_PRICE Column")
-        if "COST_PRICE" in combined_df.columns:
-            combined_df["COST_PRICE"] = (
-                combined_df["COST_PRICE"]
-                .astype(str)
-                .str.replace(r"[$,]", "", regex=True)  # Remove currency symbols and commas
-                .astype(float)
-                .round(2)
-            )
-            st.success("COST_PRICE column formatted to numeric with two decimal places.")
+st.write("### Formatting COST_PRICE Column")
+if "COST_PRICE" in combined_df.columns:
+    combined_df["COST_PRICE"] = (
+    combined_df["COST_PRICE"]
+    .astype(str)
+    .str.replace(r"[$,]", "", regex=True)  # Remove currency symbols and commas
+    .astype(float)
+    .round(2)
+)
+            
+st.success("COST_PRICE column formatted to numeric with two decimal places.")
 
         # Step 8: Add QUANTITY and ITEM LOCATION columns
         combined_df["QUANTITY"] = 1
