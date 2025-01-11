@@ -127,32 +127,32 @@ def extract_weight_with_packs(title):
     """
     Extract the weight and account for pack size in the TITLE.
     """
-        try:
-# Extract the weight (e.g., "8 oz", "10 fl oz", etc.)
-match_weight = re.search(r"(\d+(\.\d+)?)\s*(?:oz|ounces|ounce|fl. oz.|fluid ounce|fl oz|fluid ounces)", title, re.IGNORECASE)
-single_unit_weight = float(match_weight.group(1)) if match_weight else None
+try:
+    # Extract the weight (e.g., "8 oz", "10 fl oz", etc.)
+    match_weight = re.search(r"(\d+(\.\d+)?)\s*(?:oz|ounces|ounce|fl. oz.|fluid ounce|fl oz|fluid ounces)", title, re.IGNORECASE)
+    single_unit_weight = float(match_weight.group(1)) if match_weight else None
 
-                # Extract the pack size (e.g., "2 pack", "pack of 3", etc.)
-                match_pack = re.search(r"(?:\b(\d+)\s*pack\b|\bpack of\s*(\d+))", title, re.IGNORECASE)
-                pack_size = int(match_pack.group(1) or match_pack.group(2)) if match_pack else 1  # Default to 1 if no pack
+    # Extract the pack size (e.g., "2 pack", "pack of 3", etc.)
+    match_pack = re.search(r"(?:\b(\d+)\s*pack\b|\bpack of\s*(\d+))", title, re.IGNORECASE)
+    pack_size = int(match_pack.group(1) or match_pack.group(2)) if match_pack else 1  # Default to 1 if no pack
 
-                if single_unit_weight is not None:
-                    # Add 6 oz or 10 oz based on the unit type and calculate the total weight
-                    if match_weight and "fl oz" in match_weight.group(0).lower():
-                        single_unit_weight += 10  # Add 10 oz for "fl oz"
-                    else:
-                        single_unit_weight += 6  # Add 6 oz for "oz" or "ounces"
+    if single_unit_weight is not None:
+        # Add 6 oz or 10 oz based on the unit type and calculate the total weight
+        if match_weight and "fl oz" in match_weight.group(0).lower():
+            single_unit_weight += 10  # Add 10 oz for "fl oz"
+        else:
+            single_unit_weight += 6  # Add 6 oz for "oz" or "ounces"
 
-                    # Calculate total weight for the pack and convert to pounds
-                    total_weight = (single_unit_weight * pack_size) / 16  # Convert oz to pounds
-                    return round(total_weight, 2)
+        # Calculate total weight for the pack and convert to pounds
+        total_weight = (single_unit_weight * pack_size) / 16  # Convert oz to pounds
+        return round(total_weight, 2)
 
-            except Exception as e:
-                # Log the error for debugging
-                st.error(f"Error processing title '{title}': {e}")
+except Exception as e:
+    # Log the error for debugging
+    st.error(f"Error processing title '{title}': {e}")
 
-            # Return None if no weight or pack size is found
-            return None
+# Return None if no weight or pack size is found
+return None
 
         # Apply the function to the TITLE column
         if "TITLE" in combined_df.columns:
