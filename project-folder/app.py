@@ -26,7 +26,7 @@ if submit_button and new_blocked_brand:
             shipping_legend = pd.read_excel(shipping_legend_path, engine="openpyxl")
             if "Blocked Brands" not in shipping_legend.columns:
                 shipping_legend["Blocked Brands"] = ""
-            shipping_legend = shipping_legend.append({"Blocked Brands": new_blocked_brand}, ignore_index=True)
+            shipping_legend = shipping_legend.pd.concat({"Blocked Brands": new_blocked_brand}, ignore_index=True)
             shipping_legend.to_excel(shipping_legend_path, index=False, engine="openpyxl")
             st.success(f"Brand '{new_blocked_brand}' has been added to the blocked list.")
         except Exception as e:
