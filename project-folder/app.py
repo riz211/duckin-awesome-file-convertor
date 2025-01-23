@@ -17,19 +17,19 @@ blocked_brands_path = "project-folder/data/Blocked_Brands.xlsx"
 # Ensure the Blocked Brands file exists and contains the correct worksheet
 if not os.path.exists(blocked_brands_path):
     # Create a new Blocked Brands file with the correct structure if it doesn't exist
-    pd.DataFrame(columns=["Blocked Brand"]).to_excel(blocked_brands_path, index=False, sheet_name="Blocked_Brands")
+    pd.DataFrame(columns=["Blocked Brands"]).to_excel(blocked_brands_path, index=False, sheet_name="Blocked_Brands")
 else:
     # Check if the worksheet exists; create it if it doesn't
     try:
         excel_data = pd.ExcelFile(blocked_brands_path)
         if "Blocked_Brands" not in excel_data.sheet_names:
-            pd.DataFrame(columns=["Blocked Brand"]).to_excel(blocked_brands_path, index=False, sheet_name="Blocked_Brands")
+            pd.DataFrame(columns=["Blocked Brands"]).to_excel(blocked_brands_path, index=False, sheet_name="Blocked_Brands")
     except Exception as e:
         st.error(f"Error initializing Blocked Brands file: {e}")
 
 # Sidebar form to add a blocked brand
 st.sidebar.header("Manage Blocked Brands")
-with st.sidebar.form("Add Blocked Brand"):
+with st.sidebar.form("Add Blocked Brands"):
     new_brand = st.text_input("Enter the brand to block")
     submit_button = st.form_submit_button("Add Brand")
 
@@ -39,9 +39,9 @@ with st.sidebar.form("Add Blocked Brand"):
             blocked_brands = pd.read_excel(blocked_brands_path, sheet_name="Blocked_Brands")
             
             # Check if the brand is already blocked
-            if new_brand and new_brand.strip() not in blocked_brands["Blocked Brand"].values:
+            if new_brand and new_brand.strip() not in blocked_brands["Blocked Brands"].values:
                 # Append the new brand
-                new_brand_df = pd.DataFrame([{"Blocked Brand": new_brand.strip()}])
+                new_brand_df = pd.DataFrame([{"Blocked Brands": new_brand.strip()}])
                 blocked_brands = pd.concat([blocked_brands, new_brand_df], ignore_index=True)
                 
                 # Save back to the Excel file
