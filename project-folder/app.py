@@ -16,7 +16,7 @@ blocked_brands_path = "project-folder/data/Blocked_Brands.xlsx"
 
 # Initialize the Blocked Brands file if it doesn't exist
 if not os.path.exists(blocked_brands_path):
-    pd.DataFrame(columns=["Blocked Brand"]).to_excel(blocked_brands_path, index=False, sheet_name="BlockedBrands")
+    pd.DataFrame(columns=["Blocked Brand"]).to_excel(blocked_brands_path, index=False, sheet_name="Blocked_Brands")
 
 # Form to add a blocked brand
 st.sidebar.header("Add a Blocked Brand")
