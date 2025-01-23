@@ -178,6 +178,58 @@ if uploaded_files:
         combined_df = pd.concat(all_data, ignore_index=True)
         st.write("### Combined Data Preview (Before Renaming)")
         st.dataframe(combined_df)
+
+        if uploaded_files:
+    all_data = []
+
+    # Process each uploaded file
+    for uploaded_file in uploaded_files:
+        try:
+            excel_file = pd.ExcelFile(uploaded_file)
+            for sheet_name in excel_file.sheet_names:
+                sheet_data = pd.read_excel(uploaded_file, sheet_name=sheet_name, usecols="B,E,G,H,I")
+                all_data.append(sheet_data)
+        except Exception as e:
+            st.error(f"Error reading file {uploaded_file.name}: {e}")
+
+    if all_data:
+        # Combine all sheets into one DataFrame
+        combined_df = pd.concat(all_data, ignore_index=True)
+
+        # Remove rows with blocked brands
+        try:
+            # Load blocked brands
+            blocked_brands_list = pd.read_excel(blocked_brands_path, sheet_name="Blocked_Brands")["Blocked Brands"].str.strip().tolist()
+
+            if "BRAND" in combined_df.columns:
+                # Filter out blocked brands
+                removed_rows = combined_df[combined_df["BRAND"].isin(blocked_brands_list)]
+                combined_df = combined_df[~combined_df["BRAND"].isin(blocked_brands_list)]
+
+                # Display removed rows
+                if not removed_rows.empty:
+                    st.write("### Rows Removed Due to Blocked Brands")
+                    st.dataframe(removed_rows)
+
+                    # Allow downloading of removed rows
+                    buffer_removed = BytesIO()
+                    with pd.ExcelWriter(buffer_removed, engine="openpyxl") as writer:
+                        removed_rows.to_excel(writer, index=False, sheet_name="Removed_Blocked_Brands")
+                    buffer_removed.seek(0)
+
+                    st.download_button(
+                        label="Download Removed Rows",
+                        data=buffer_removed.getvalue(),
+                        file_name="Removed_Blocked_Brands.xlsx",
+                        mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                    )
+
+                st.success(f"Blocked brands have been filtered out. {len(removed_rows)} rows removed.")
+            else:
+                st.warning("The 'BRAND' column is missing from the uploaded data. Blocked brands could not be processed.")
+        except Exception as e:
+            st.error(f"Error processing blocked brands: {e}")
+
     
 
         # Step 3.1: Add HANDLING COST column
