@@ -8,6 +8,28 @@ import os
 # App title
 st.title("Fuckin' Awesome File Convertor")
 
+# Add a form to input blocked brands
+st.header("Manage Blocked Brands")
+with st.form("blocked_brands_form", clear_on_submit=True):
+    new_blocked_brand = st.text_input("Enter a brand to block:")
+    submit_button = st.form_submit_button("Add to Blocked Brands")
+
+if submit_button and new_blocked_brand:
+    if not os.path.exists(shipping_legend_path):
+        st.error(f"The shipping legend file does not exist at the specified path: {shipping_legend_path}")
+    else:
+        # Append the new blocked brand to the shipping legend
+        try:
+            shipping_legend = pd.read_excel(shipping_legend_path, engine="openpyxl")
+            if "Blocked Brands" not in shipping_legend.columns:
+                shipping_legend["Blocked Brands"] = ""
+            shipping_legend = shipping_legend.append({"Blocked Brands": new_blocked_brand}, ignore_index=True)
+            shipping_legend.to_excel(shipping_legend_path, index=False, engine="openpyxl")
+            st.success(f"Brand '{new_blocked_brand}' has been added to the blocked list.")
+        except Exception as e:
+            st.error(f"Error updating blocked brands: {e}")
+
+
 # Step 1: File uploader
 st.header("Upload Excel Files")
 uploaded_files = st.file_uploader("Upload one or more Excel files", type=["xlsx"], accept_multiple_files=True)
@@ -30,6 +52,20 @@ if uploaded_files:
         combined_df = pd.concat(all_data, ignore_index=True)
         st.write("### Combined Data Preview (Before Renaming)")
         st.dataframe(combined_df)
+
+        # Filter out blocked brands from the combined DataFrame
+if not os.path.exists(shipping_legend_path):
+    st.error(f"The shipping legend file does not exist at the specified path: {shipping_legend_path}")
+else:
+    try:
+        shipping_legend = pd.read_excel(shipping_legend_path, engine="openpyxl")
+        if "Blocked Brands" in shipping_legend.columns:
+            blocked_brands = shipping_legend["Blocked Brands"].dropna().unique()
+            combined_df = combined_df[~combined_df["BRAND"].isin(blocked_brands)]
+            st.success("Blocked brands have been removed from the input files.")
+    except Exception as e:
+        st.error(f"Error loading or processing the blocked brands list: {e}")
+
 
         # Step 3.1: Add HANDLING COST column
         st.write("### Adding HANDLING COST Column")
