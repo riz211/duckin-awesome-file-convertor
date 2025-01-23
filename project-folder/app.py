@@ -341,14 +341,14 @@ if uploaded_files:
         combined_df.drop_duplicates(inplace=True)
 
         # Step X: Remove rows with blocked brands
-try:
-    # Load blocked brands from the Blocked_Brands.xlsx file
-    blocked_brands_list = pd.read_excel(blocked_brands_path, sheet_name="Blocked_Brands")["Blocked Brands"].str.strip().tolist()
+        try:
+            # Load blocked brands from the Blocked_Brands.xlsx file
+            blocked_brands_list = pd.read_excel(blocked_brands_path, sheet_name="Blocked_Brands")["Blocked Brands"].str.strip().tolist()
 
-    if "BRAND" in combined_df.columns:
-        # Separate rows with blocked brands
-        removed_rows = combined_df[combined_df["BRAND"].isin(blocked_brands_list)]
-        combined_df = combined_df[~combined_df["BRAND"].isin(blocked_brands_list)]
+        if "BRAND" in combined_df.columns:
+            # Separate rows with blocked brands
+            removed_rows = combined_df[combined_df["BRAND"].isin(blocked_brands_list)]
+            combined_df = combined_df[~combined_df["BRAND"].isin(blocked_brands_list)]
 
         # Display the removed rows
         if not removed_rows.empty:
