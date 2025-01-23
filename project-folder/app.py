@@ -63,11 +63,11 @@ try:
     
     # Ensure proper serial numbers without duplication
     blocked_brands_display = (
-        blocked_brands.reset_index(drop=True)  # Drop the existing index
-        .reset_index()  # Add a new index starting from 0
-        .rename(columns={"index": "S.No"})  # Rename the new index column
-        .assign(**{"S.No": lambda df: df["S.No"] + 1})  # Increment the serial number by 1
+    blocked_brands.reset_index(drop=True)  # Drop the existing index
+    .reset_index()  # Create a new index starting from 0
+    .rename(columns={"index": "S.No"})  # Rename it as "S.No"
     )
+    blocked_brands_display["S.No"] += 1  # Increment to start from 1
     
     st.sidebar.write(blocked_brands_display[["S.No", "Blocked Brands"]])  # Show only S.No and Blocked Brands columns
 
