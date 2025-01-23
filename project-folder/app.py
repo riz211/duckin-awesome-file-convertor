@@ -180,7 +180,7 @@ if uploaded_files:
         st.dataframe(combined_df)
 
         if uploaded_files:
-    all_data = []
+            all_data = []
 
     # Process each uploaded file
     for uploaded_file in uploaded_files:
