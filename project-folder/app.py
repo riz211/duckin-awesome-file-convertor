@@ -8,6 +8,9 @@ import os
 # App title
 st.title("Fuckin' Awesome File Convertor")
 
+# Define the path to the shipping legend
+shipping_legend_path = "project-folder/data/default_shipping_legend.xlsx"
+
 # Add a form to input blocked brands
 st.header("Manage Blocked Brands")
 with st.form("blocked_brands_form", clear_on_submit=True):
