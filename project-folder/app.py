@@ -66,10 +66,10 @@ try:
         blocked_brands.reset_index(drop=True)  # Drop the existing index
         .reset_index()  # Add a new index starting from 0
         .rename(columns={"index": "S.No"})  # Rename the new index column
+        .assign(**{"S.No": lambda df: df["S.No"] + 1})  # Increment the serial number by 1
     )
     
-    # Display only the S.No and Blocked Brands columns, avoid any doubling
-    st.sidebar.write(blocked_brands_display[["S.No", "Blocked Brands"]])
+    st.sidebar.write(blocked_brands_display[["S.No", "Blocked Brands"]])  # Show only S.No and Blocked Brands columns
 
     # Provide a download button for the blocked brands file
     buffer = BytesIO()
@@ -85,6 +85,7 @@ try:
     )
 except Exception as e:
     st.sidebar.error(f"Error loading blocked brands: {e}")
+
     
 # Step 1: File uploader
 st.header("Upload Excel Files")
