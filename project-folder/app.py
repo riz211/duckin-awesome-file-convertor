@@ -69,30 +69,6 @@ if uploaded_files:
         st.write("### Combined Data Preview (Before Renaming)")
         st.dataframe(combined_df)
 
-        # Filter out blocked brands from the combined DataFrame
-if not os.path.exists(shipping_legend_path):
-    st.error(f"The shipping legend file does not exist at the specified path: {shipping_legend_path}")
-else:
-    try:
-        shipping_legend = pd.read_excel(shipping_legend_path, engine="openpyxl")
-        if "Blocked Brands" in shipping_legend.columns:
-            blocked_brands = shipping_legend["Blocked Brands"].dropna().unique()
-            combined_df = combined_df[~combined_df["BRAND"].isin(blocked_brands)]
-            st.success("Blocked brands have been removed from the input files.")
-    except Exception as e:
-        st.error(f"Error loading or processing the blocked brands list: {e}")
-
-        # Load blocked brands from the Blocked Brands file
-        blocked_brands = pd.read_excel(blocked_brands_path, sheet_name="BlockedBrands")["Blocked Brand"].dropna().str.strip().tolist()
-
-        # Filter out rows with blocked brands
-        if "BRAND" in combined_df.columns:
-            before_filter_count = len(combined_df)
-            combined_df = combined_df[~combined_df["BRAND"].str.strip().isin(blocked_brands)]
-            after_filter_count = len(combined_df)
-            st.success(f"Filtered out {before_filter_count - after_filter_count} rows with blocked brands.")
-
-
 
         # Step 3.1: Add HANDLING COST column
         st.write("### Adding HANDLING COST Column")
