@@ -178,19 +178,6 @@ if uploaded_files:
         combined_df = pd.concat(all_data, ignore_index=True)
         st.write("### Combined Data Preview (Before Renaming)")
         st.dataframe(combined_df)
-
-    # Filter out blocked brands from the combined DataFrame
-    if not blocked_brands.empty and "BRAND" in combined_df.columns:
-        removed_rows = combined_df[combined_df["BRAND"].isin(blocked_brands["Blocked Brands"])]
-        combined_df = combined_df[~combined_df["BRAND"].isin(blocked_brands["Blocked Brands"])]
-
-    # Display the removed rows
-        if not removed_rows.empty:
-            st.write("### Removed Rows with Blocked Brands")
-            st.dataframe(removed_rows)
-            st.write(f"**Total Rows Removed:** {len(removed_rows)}")
-        else:
-            st.warning("Blocked Brands list is empty or BRAND column is missing in the input data.")
     
 
         # Step 3.1: Add HANDLING COST column
