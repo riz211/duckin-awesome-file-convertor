@@ -85,11 +85,27 @@ try:
     
     # Ensure proper serial numbers without duplication
     blocked_brands = blocked_brands.reset_index(drop=True)  # Drop existing index
-    blocked_brands["S.No"] = range(1, len(blocked_brands) + 1)  # Add proper serial numbers starting from 1
+    blocked_brands.insert(0, "S.No", range(1, len(blocked_brands) + 1))  # Add proper serial numbers starting from 1
 
     # Display only the S.No and Blocked Brands columns
     st.sidebar.subheader("Blocked Brands")
     st.sidebar.write(blocked_brands[["S.No", "Blocked Brands"]])
+
+    # Provide a download button for the Blocked Brands list
+    buffer = BytesIO()
+    with pd.ExcelWriter(buffer, engine="openpyxl") as writer:
+        blocked_brands[["Blocked Brands"]].to_excel(writer, index=False, sheet_name="Blocked_Brands")
+    buffer.seek(0)
+
+    st.sidebar.download_button(
+        label="Download Blocked Brands",
+        data=buffer.getvalue(),
+        file_name="Blocked_Brands.xlsx",
+        mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    )
+except Exception as e:
+    st.sidebar.error(f"Error loading blocked brands: {e}")
+
 
     # Provide a download button for the Blocked Brands list
     buffer = BytesIO()
