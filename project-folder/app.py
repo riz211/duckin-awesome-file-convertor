@@ -77,16 +77,33 @@ if bulk_file:
             st.sidebar.success("Blocked Brands have been updated successfully.")
     except Exception as e:
         st.sidebar.error(f"Error processing bulk upload: {e}")
+
 # Display Blocked Brands under the form
 try:
     blocked_brands = pd.read_excel(blocked_brands_path, sheet_name="Blocked_Brands")
     st.sidebar.subheader("Blocked Brands")
     
     # Ensure proper serial numbers without duplication
-    blocked_brands_display = blocked_brands.reset_index(drop=True)  # Drop the existing index
-    blocked_brands_display["S.No"] = blocked_brands_display.index + 1  # Add S.No starting from 1
+    blocked_brands["S.No"] = range(1, len(blocked_brands) + 1)  # Add S.No starting from 1
+    
+    # Display only the S.No and Blocked Brands columns
+    st.sidebar.write(blocked_brands[["S.No", "Blocked Brands"]])
+    
+    # Provide a download button for the blocked brands file
+    buffer = BytesIO()
+    with pd.ExcelWriter(buffer, engine="openpyxl") as writer:
+        blocked_brands.to_excel(writer, index=False, sheet_name="Blocked_Brands")
+    buffer.seek(0)
 
-    st.sidebar.write(blocked_brands_display[["S.No", "Blocked Brands"]])  # Show only S.No and Blocked Brands columns
+    st.sidebar.download_button(
+        label="Download Blocked Brands",
+        data=buffer.getvalue(),
+        file_name="Blocked_Brands.xlsx",
+        mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    )
+except Exception as e:
+    st.sidebar.error(f"Error loading blocked brands: {e}")
+
 
     # Provide a download button for the blocked brands file
     buffer = BytesIO()
