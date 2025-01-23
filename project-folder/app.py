@@ -375,23 +375,23 @@ except Exception as e:
     st.error(f"Error processing blocked brands: {e}")
 
 
-        # Step 11.1: Calculate and Display Metrics
-        st.write("### Metrics Summary")
+    # Step 11.1: Calculate and Display Metrics
+    st.write("### Metrics Summary")
 
-        # Total number of listings in the input files
-        total_input_listings = len(pd.concat(all_data, ignore_index=True))
+    # Total number of listings in the input files
+    total_input_listings = len(pd.concat(all_data, ignore_index=True))
 
-        # Total number of listings in the output file
-        total_output_listings = len(combined_df)
+    # Total number of listings in the output file
+    total_output_listings = len(combined_df)
 
-        # Total duplicates removed
-        total_duplicates_removed = total_input_listings - total_output_listings
+    # Total duplicates removed
+    total_duplicates_removed = total_input_listings - total_output_listings
 
-        # Total listings with no weights
-        listings_no_weights = combined_df["ITEM WEIGHT (pounds)"].isnull().sum()    
+    # Total listings with no weights
+    listings_no_weights = combined_df["ITEM WEIGHT (pounds)"].isnull().sum()    
         
-        # Step X.1: Update metrics
-        removed_blocked_count = len(removed_rows) if "removed_rows" in locals() else 0
+    # Step X.1: Update metrics
+    removed_blocked_count = len(removed_rows) if "removed_rows" in locals() else 0
 
         # Display the metrics
         st.markdown(f"""
