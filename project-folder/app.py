@@ -11,26 +11,39 @@ st.title("Fuckin' Awesome File Convertor")
 # Define the path to the shipping legend
 shipping_legend_path = "project-folder/data/default_shipping_legend.xlsx"
 
-# Add a form to input blocked brands
-st.header("Manage Blocked Brands")
-with st.form("blocked_brands_form", clear_on_submit=True):
-    new_blocked_brand = st.text_input("Enter a brand to block:")
-    submit_button = st.form_submit_button("Add to Blocked Brands")
+# Path for Blocked Brands file
+blocked_brands_path = "project-folder/data/Blocked_Brands.xlsx"
 
-if submit_button and new_blocked_brand:
-    if not os.path.exists(shipping_legend_path):
-        st.error(f"The shipping legend file does not exist at the specified path: {shipping_legend_path}")
-    else:
-        # Append the new blocked brand to the shipping legend
+# Initialize the Blocked Brands file if it doesn't exist
+if not os.path.exists(blocked_brands_path):
+    pd.DataFrame(columns=["Blocked Brand"]).to_excel(blocked_brands_path, index=False, sheet_name="BlockedBrands")
+
+# Form to add a blocked brand
+st.sidebar.header("Add a Blocked Brand")
+with st.sidebar.form("Add Blocked Brand"):
+    new_brand = st.text_input("Enter the brand to block")
+    submit_button = st.form_submit_button("Add Brand")
+
+    if submit_button:
         try:
-            shipping_legend = pd.read_excel(shipping_legend_path, engine="openpyxl")
-            if "Blocked Brands" not in shipping_legend.columns:
-                shipping_legend["Blocked Brands"] = ""
-            shipping_legend = shipping_legend.pd.concat({"Blocked Brands": new_blocked_brand}, ignore_index=True)
-            shipping_legend.to_excel(shipping_legend_path, index=False, engine="openpyxl")
-            st.success(f"Brand '{new_blocked_brand}' has been added to the blocked list.")
+            # Load the existing blocked brands
+            blocked_brands = pd.read_excel(blocked_brands_path, sheet_name="BlockedBrands")
+            
+            # Add the new brand
+            if new_brand:
+                new_brand_df = pd.DataFrame([{"Blocked Brand": new_brand.strip()}])
+                blocked_brands = pd.concat([blocked_brands, new_brand_df], ignore_index=True)
+                
+                # Save back to the file
+                with pd.ExcelWriter(blocked_brands_path, engine="openpyxl", mode="w") as writer:
+                    blocked_brands.to_excel(writer, index=False, sheet_name="BlockedBrands")
+                
+                st.success(f"Brand '{new_brand}' has been added to the blocked list.")
+            else:
+                st.warning("Please enter a brand name.")
         except Exception as e:
             st.error(f"Error updating blocked brands: {e}")
+
 
 
 # Step 1: File uploader
@@ -68,6 +81,17 @@ else:
             st.success("Blocked brands have been removed from the input files.")
     except Exception as e:
         st.error(f"Error loading or processing the blocked brands list: {e}")
+
+        # Load blocked brands from the Blocked Brands file
+blocked_brands = pd.read_excel(blocked_brands_path, sheet_name="BlockedBrands")["Blocked Brand"].dropna().str.strip().tolist()
+
+# Filter out rows with blocked brands
+if "BRAND" in combined_df.columns:
+    before_filter_count = len(combined_df)
+    combined_df = combined_df[~combined_df["BRAND"].str.strip().isin(blocked_brands)]
+    after_filter_count = len(combined_df)
+    st.success(f"Filtered out {before_filter_count - after_filter_count} rows with blocked brands.")
+
 
 
         # Step 3.1: Add HANDLING COST column
