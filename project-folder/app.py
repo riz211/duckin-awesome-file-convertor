@@ -60,12 +60,16 @@ with st.sidebar.form("Add Blocked Brands"):
 try:
     blocked_brands = pd.read_excel(blocked_brands_path, sheet_name="Blocked_Brands")
     st.sidebar.subheader("Blocked Brands")
-    st.sidebar.write(
+    
+    # Ensure proper serial numbers without duplication
+    blocked_brands_display = (
         blocked_brands.reset_index(drop=True)  # Drop the existing index
         .reset_index()  # Add a new index starting from 0
         .rename(columns={"index": "S.No"})  # Rename the new index column
         .assign(**{"S.No": lambda df: df["S.No"] + 1})  # Increment the serial number by 1
     )
+    
+    st.sidebar.write(blocked_brands_display[["S.No", "Blocked Brands"]])  # Show only S.No and Blocked Brands columns
 
     # Provide a download button for the blocked brands file
     buffer = BytesIO()
@@ -81,7 +85,7 @@ try:
     )
 except Exception as e:
     st.sidebar.error(f"Error loading blocked brands: {e}")
-
+    
 # Step 1: File uploader
 st.header("Upload Excel Files")
 uploaded_files = st.file_uploader("Upload one or more Excel files", type=["xlsx"], accept_multiple_files=True)
