@@ -393,41 +393,41 @@ except Exception as e:
     # Step X.1: Update metrics
     removed_blocked_count = len(removed_rows) if "removed_rows" in locals() else 0
 
-        # Display the metrics
-        st.markdown(f"""
-        - **Total Listings in Input Files:** {total_input_listings}
-        - **Total Listings in Output File:** {total_output_listings}
-        - **Total Duplicates Removed:** {total_duplicates_removed}
-        - **Listings with No Weights (Red Highlighted Rows):** {listings_no_weights}
-        - **Listings Removed Due to Blocked Brands:** {removed_blocked_count}
-        """)
+    # Display the metrics
+    st.markdown(f"""
+    - **Total Listings in Input Files:** {total_input_listings}
+    - **Total Listings in Output File:** {total_output_listings}
+    - **Total Duplicates Removed:** {total_duplicates_removed}
+    - **Listings with No Weights (Red Highlighted Rows):** {listings_no_weights}
+    - **Listings Removed Due to Blocked Brands:** {removed_blocked_count}
+    """)
 
 
-        # Step 12: Export final DataFrame with Conditional Formatting
-        st.write("### Download Consolidated File")
+    # Step 12: Export final DataFrame with Conditional Formatting
+    st.write("### Download Consolidated File")
 
-       # Step 12.1: Move rows with missing weights to the end
-        st.write("### Reordering Rows with Missing Weights")
-        combined_df['Missing Weight'] = combined_df['ITEM WEIGHT (pounds)'].isnull()
-        combined_df = combined_df.sort_values(by='Missing Weight', ascending=True).drop(columns=['Missing Weight'])
-        st.success("Rows with missing weights have been moved to the bottom.")
+    # Step 12.1: Move rows with missing weights to the end
+    st.write("### Reordering Rows with Missing Weights")
+    combined_df['Missing Weight'] = combined_df['ITEM WEIGHT (pounds)'].isnull()
+    combined_df = combined_df.sort_values(by='Missing Weight', ascending=True).drop(columns=['Missing Weight'])
+    st.success("Rows with missing weights have been moved to the bottom.")
 
-        # Step 12.2: Define a styling function for highlighting rows
-        def highlight_missing_weights(row):
-            if pd.isnull(row["ITEM WEIGHT (pounds)"]):
-                return ["background-color: #FFCCCC"] * len(row)
-            return [""] * len(row)
+    # Step 12.2: Define a styling function for highlighting rows
+    def highlight_missing_weights(row):
+        if pd.isnull(row["ITEM WEIGHT (pounds)"]):
+            return ["background-color: #FFCCCC"] * len(row)
+        return [""] * len(row)
 
-        # Step 12.4: Format numeric columns to 2 decimal places
-        numeric_columns = [
-            "COST_PRICE",
-            "HANDLING COST",
-            "ITEM WEIGHT (pounds)",
-            "SHIPPING COST",
-            "RETAIL PRICE",
-            "MIN PRICE",
-            "MAX PRICE",
-        ]
+    # Step 12.4: Format numeric columns to 2 decimal places
+    numeric_columns = [
+        "COST_PRICE",
+        "HANDLING COST",
+        "ITEM WEIGHT (pounds)",
+        "SHIPPING COST",
+        "RETAIL PRICE",
+        "MIN PRICE",
+        "MAX PRICE",
+    ]
 
         # Apply formatting for numeric columns
         styled_df = (
