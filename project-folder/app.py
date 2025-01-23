@@ -56,6 +56,27 @@ with st.sidebar.form("Add Blocked Brands"):
         except Exception as e:
             st.sidebar.error(f"Error updating blocked brands: {e}")
 
+# Bulk Upload for Blocked Brands
+st.sidebar.subheader("Bulk Upload Blocked Brands")
+bulk_file = st.sidebar.file_uploader("Upload an Excel file with Blocked Brands", type=["xlsx"])
+
+if bulk_file:
+    try:
+        bulk_brands = pd.read_excel(bulk_file)
+        if "Blocked Brands" not in bulk_brands.columns:
+            st.sidebar.error("The uploaded file must contain a 'Blocked Brands' column.")
+        else:
+            blocked_brands = pd.read_excel(blocked_brands_path, sheet_name="Blocked_Brands")
+            # Combine the current and new brands, avoiding duplicates
+            updated_brands = pd.concat([blocked_brands, bulk_brands]).drop_duplicates(subset=["Blocked Brands"], ignore_index=True)
+            
+            # Save back to the Blocked Brands file
+            with pd.ExcelWriter(blocked_brands_path, engine="openpyxl", mode="w") as writer:
+                updated_brands.to_excel(writer, index=False, sheet_name="Blocked_Brands")
+            
+            st.sidebar.success("Blocked Brands have been updated successfully.")
+    except Exception as e:
+        st.sidebar.error(f"Error processing bulk upload: {e}")
 # Display Blocked Brands under the form
 try:
     blocked_brands = pd.read_excel(blocked_brands_path, sheet_name="Blocked_Brands")
