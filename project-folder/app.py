@@ -86,11 +86,11 @@ else:
         blocked_brands = pd.read_excel(blocked_brands_path, sheet_name="BlockedBrands")["Blocked Brand"].dropna().str.strip().tolist()
 
         # Filter out rows with blocked brands
-            if "BRAND" in combined_df.columns:
-        before_filter_count = len(combined_df)
-        combined_df = combined_df[~combined_df["BRAND"].str.strip().isin(blocked_brands)]
-        after_filter_count = len(combined_df)
-        st.success(f"Filtered out {before_filter_count - after_filter_count} rows with blocked brands.")
+        if "BRAND" in combined_df.columns:
+            before_filter_count = len(combined_df)
+            combined_df = combined_df[~combined_df["BRAND"].str.strip().isin(blocked_brands)]
+            after_filter_count = len(combined_df)
+            st.success(f"Filtered out {before_filter_count - after_filter_count} rows with blocked brands.")
 
 
 
