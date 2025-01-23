@@ -66,10 +66,10 @@ try:
         blocked_brands.reset_index(drop=True)  # Drop the existing index
         .reset_index()  # Add a new index starting from 0
         .rename(columns={"index": "S.No"})  # Rename the new index column
-        .assign(**{"S.No": lambda df: df["S.No"] + 1})  # Increment the serial number by 1
     )
     
-    st.sidebar.write(blocked_brands_display[["S.No", "Blocked Brands"]])  # Show only S.No and Blocked Brands columns
+    # Display only the S.No and Blocked Brands columns, avoid any doubling
+    st.sidebar.write(blocked_brands_display[["S.No", "Blocked Brands"]])
 
     # Provide a download button for the blocked brands file
     buffer = BytesIO()
