@@ -16,7 +16,7 @@ blocked_brands_path = "project-folder/data/Blocked_Brands.xlsx"
 
 # Initialize the Blocked Brands file if it doesn't exist
 if not os.path.exists(blocked_brands_path):
-    pd.DataFrame(columns=["Blocked Brand"]).to_excel(blocked_brands_path, index=False, sheet_name="Blocked_Brands")
+    pd.DataFrame(columns=["Blocked Brands"]).to_excel(blocked_brands_path, index=False, sheet_name="Blocked_Brands")
 
 # Form to add a blocked brand
 st.sidebar.header("Add a Blocked Brand")
@@ -27,16 +27,16 @@ with st.sidebar.form("Add Blocked Brand"):
     if submit_button:
         try:
             # Load the existing blocked brands
-            blocked_brands = pd.read_excel(blocked_brands_path, sheet_name="BlockedBrands")
+            blocked_brands = pd.read_excel(blocked_brands_path, sheet_name="Blocked_Brands")
             
             # Add the new brand
             if new_brand:
-                new_brand_df = pd.DataFrame([{"Blocked Brand": new_brand.strip()}])
+                new_brand_df = pd.DataFrame([{"Blocked Brands": new_brand.strip()}])
                 blocked_brands = pd.concat([blocked_brands, new_brand_df], ignore_index=True)
                 
                 # Save back to the file
                 with pd.ExcelWriter(blocked_brands_path, engine="openpyxl", mode="w") as writer:
-                    blocked_brands.to_excel(writer, index=False, sheet_name="BlockedBrands")
+                    blocked_brands.to_excel(writer, index=False, sheet_name="Blocked_Brands")
                 
                 st.success(f"Brand '{new_brand}' has been added to the blocked list.")
             else:
