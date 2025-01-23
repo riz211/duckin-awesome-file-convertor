@@ -49,7 +49,7 @@ with st.sidebar.form("Add Blocked Brands"):
                     blocked_brands.to_excel(writer, index=False, sheet_name="Blocked_Brands")
                 
                 st.sidebar.success(f"Brand '{new_brand}' has been added to the blocked list.")
-            elif new_brand.strip() in blocked_brands["Blocked Brand"].values:
+            elif new_brand.strip() in blocked_brands["Blocked Brands"].values:
                 st.sidebar.warning(f"The brand '{new_brand}' is already in the blocked list.")
             else:
                 st.sidebar.warning("Please enter a valid brand name.")
