@@ -62,13 +62,9 @@ try:
     st.sidebar.subheader("Blocked Brands")
     
     # Ensure proper serial numbers without duplication
-    blocked_brands_display = (
-    blocked_brands.reset_index(drop=True)  # Drop the existing index
-    .reset_index()  # Create a new index starting from 0
-    .rename(columns={"index": "S.No"})  # Rename it as "S.No"
-    )
-    blocked_brands_display["S.No"] += 1  # Increment to start from 1
-    
+    blocked_brands_display = blocked_brands.reset_index(drop=True)  # Drop the existing index
+    blocked_brands_display["S.No"] = blocked_brands_display.index + 1  # Add S.No starting from 1
+
     st.sidebar.write(blocked_brands_display[["S.No", "Blocked Brands"]])  # Show only S.No and Blocked Brands columns
 
     # Provide a download button for the blocked brands file
@@ -85,6 +81,7 @@ try:
     )
 except Exception as e:
     st.sidebar.error(f"Error loading blocked brands: {e}")
+
 
     
 # Step 1: File uploader
