@@ -429,15 +429,15 @@ except Exception as e:
         "MAX PRICE",
     ]
 
-        # Apply formatting for numeric columns
-        styled_df = (
-            combined_df.style.apply(highlight_missing_weights, axis=1)
-            .format({col: "{:.2f}" for col in numeric_columns})
-        )
+    # Apply formatting for numeric columns
+    styled_df = (
+        combined_df.style.apply(highlight_missing_weights, axis=1)
+        .format({col: "{:.2f}" for col in numeric_columns})
+    )
 
-        # Display the styled DataFrame with formatting
-        st.write("### Updated Final Data Preview with Highlights and Formatting")
-        st.dataframe(styled_df)
+    # Display the styled DataFrame with formatting
+    st.write("### Updated Final Data Preview with Highlights and Formatting")
+    st.dataframe(styled_df)
 
 if st.button("Export to Excel"):
     buffer = BytesIO()
