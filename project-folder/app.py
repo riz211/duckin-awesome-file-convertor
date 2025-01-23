@@ -61,10 +61,10 @@ try:
     blocked_brands = pd.read_excel(blocked_brands_path, sheet_name="Blocked_Brands")
     st.sidebar.subheader("Blocked Brands")
     st.sidebar.write(
-    blocked_brands.reset_index(drop=True)
-    .reset_index()
-    .rename(columns={"index": "S.No"})
-    .assign(**{"S.No": lambda df: df["S.No"] + 1})
+        blocked_brands.reset_index(drop=True)  # Drop the existing index
+        .reset_index()  # Add a new index starting from 0
+        .rename(columns={"index": "S.No"})  # Rename the new index column
+        .assign(**{"S.No": lambda df: df["S.No"] + 1})  # Increment the serial number by 1
     )
 
     # Provide a download button for the blocked brands file
@@ -81,8 +81,6 @@ try:
     )
 except Exception as e:
     st.sidebar.error(f"Error loading blocked brands: {e}")
-
-
 
 # Step 1: File uploader
 st.header("Upload Excel Files")
