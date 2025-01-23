@@ -335,11 +335,44 @@ if uploaded_files:
             combined_df["MIN PRICE"] = combined_df["RETAIL PRICE"]
             combined_df["MAX PRICE"] = combined_df["RETAIL PRICE"].apply(lambda x: round(x * 1.35, 2) if x is not None else None)
 
-        # Step 10.3: Remove rows with "Great Value"
-        combined_df = combined_df[~combined_df["TITLE"].str.contains("Great Value", case=False, na=False)]
+       
 
         # Step 11: Remove duplicate rows
         combined_df.drop_duplicates(inplace=True)
+
+        # Step X: Remove rows with blocked brands
+try:
+    # Load blocked brands from the Blocked_Brands.xlsx file
+    blocked_brands_list = pd.read_excel(blocked_brands_path, sheet_name="Blocked_Brands")["Blocked Brands"].str.strip().tolist()
+
+    if "BRAND" in combined_df.columns:
+        # Separate rows with blocked brands
+        removed_rows = combined_df[combined_df["BRAND"].isin(blocked_brands_list)]
+        combined_df = combined_df[~combined_df["BRAND"].isin(blocked_brands_list)]
+
+        # Display the removed rows
+        if not removed_rows.empty:
+            st.write("### Rows Removed Due to Blocked Brands")
+            st.dataframe(removed_rows)
+
+            # Provide a download button for the removed rows
+            buffer_removed = BytesIO()
+            with pd.ExcelWriter(buffer_removed, engine="openpyxl") as writer:
+                removed_rows.to_excel(writer, index=False, sheet_name="Removed_Blocked_Brands")
+            buffer_removed.seek(0)
+
+            st.download_button(
+                label="Download Removed Rows",
+                data=buffer_removed.getvalue(),
+                file_name="Removed_Blocked_Brands.xlsx",
+                mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+            )
+
+        st.success(f"Blocked brands have been filtered out. {len(removed_rows)} rows removed.")
+    else:
+        st.warning("The 'BRAND' column is missing from the uploaded data. Blocked brands could not be processed.")
+except Exception as e:
+    st.error(f"Error processing blocked brands: {e}")
 
         # Step 11.1: Calculate and Display Metrics
         st.write("### Metrics Summary")
@@ -354,7 +387,10 @@ if uploaded_files:
         total_duplicates_removed = total_input_listings - total_output_listings
 
         # Total listings with no weights
-        listings_no_weights = combined_df["ITEM WEIGHT (pounds)"].isnull().sum()
+        listings_no_weights = combined_df["ITEM WEIGHT (pounds)"].isnull().sum()    
+        
+        # Step X.1: Update metrics
+        removed_blocked_count = len(removed_rows) if "removed_rows" in locals() else 0
 
         # Display the metrics
         st.markdown(f"""
@@ -362,6 +398,7 @@ if uploaded_files:
         - **Total Listings in Output File:** {total_output_listings}
         - **Total Duplicates Removed:** {total_duplicates_removed}
         - **Listings with No Weights (Red Highlighted Rows):** {listings_no_weights}
+        - **Listings Removed Due to Blocked Brands:** {removed_blocked_count}
         """)
 
 
