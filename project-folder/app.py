@@ -60,7 +60,12 @@ with st.sidebar.form("Add Blocked Brands"):
 try:
     blocked_brands = pd.read_excel(blocked_brands_path, sheet_name="Blocked_Brands")
     st.sidebar.subheader("Blocked Brands")
-    st.sidebar.write(blocked_brands.reset_index(drop=True).reset_index().rename(columns={"index": "S.No"}))
+    st.sidebar.write(
+    blocked_brands.reset_index(drop=True)
+    .reset_index()
+    .rename(columns={"index": "S.No"})
+    .assign(**{"S.No": lambda df: df["S.No"] + 1})
+    )
 
     # Provide a download button for the blocked brands file
     buffer = BytesIO()
