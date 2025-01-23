@@ -189,8 +189,8 @@ if uploaded_files:
             st.write("### Removed Rows with Blocked Brands")
             st.dataframe(removed_rows)
             st.write(f"**Total Rows Removed:** {len(removed_rows)}")
-    else:
-    st.warning("Blocked Brands list is empty or BRAND column is missing in the input data.")
+        else:
+        st.warning("Blocked Brands list is empty or BRAND column is missing in the input data.")
     
 
         # Step 3.1: Add HANDLING COST column
