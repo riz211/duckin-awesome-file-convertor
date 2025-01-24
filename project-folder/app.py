@@ -455,4 +455,4 @@ if st.button("Export to Excel"):
         mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
     )
 else:
-    st.info("Upload one or more Excel files to get started.")
+    st.success("The output file is ready for download.")
