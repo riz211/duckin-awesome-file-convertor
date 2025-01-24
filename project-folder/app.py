@@ -454,7 +454,7 @@ if st.button("Export to Excel"):
         file_name="Consolidated_Data_with_Embedded_Legend.xlsx",
         mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
     )
-if combined_df.empty:
-    st.info("Upload one or more Excel files to get started.")
-else:
-    st.success("The output file is ready for download.")
+    if combined_df.empty:
+        st.info("Upload one or more Excel files to get started.")
+    else:
+        st.success("The output file is ready for download.")
