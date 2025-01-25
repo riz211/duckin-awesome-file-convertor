@@ -353,7 +353,7 @@ if uploaded_files:
         combined_df.drop_duplicates(inplace=True)
 
     # Step X: Remove rows with blocked brands
-if "BRAND" in combined_df.columns:
+if 'combined_df' in locals() and not combined_df.empty and "BRAND" in combined_df.columns:
     try:
         # Load blocked brands from the Blocked_Brands.xlsx file
         blocked_brands_list = pd.read_excel(blocked_brands_path, sheet_name="Blocked_Brands")["Blocked Brands"].str.strip().tolist()
@@ -384,7 +384,8 @@ if "BRAND" in combined_df.columns:
     except Exception as e:
         st.error(f"Error processing blocked brands: {e}")
 else:
-    st.warning("The 'BRAND' column is missing from the uploaded data. Blocked brands could not be processed.")
+    st.warning("The 'BRAND' column is missing from the uploaded data or no files have been uploaded yet.")
+
 
     # Step 11.1: Calculate and Display Metrics
     st.write("### Metrics Summary")
