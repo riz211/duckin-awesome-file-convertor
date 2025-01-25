@@ -355,8 +355,8 @@ if uploaded_files:
         # Step X: Remove rows with blocked brands
         if "BRAND" in combined_df.columns:
             try:
-            # Load blocked brands from the Blocked_Brands.xlsx file
-            blocked_brands_list = pd.read_excel(blocked_brands_path, sheet_name="Blocked_Brands")["Blocked Brands"].str.strip().tolist()
+                # Load blocked brands from the Blocked_Brands.xlsx file
+                blocked_brands_list = pd.read_excel(blocked_brands_path, sheet_name="Blocked_Brands")["Blocked Brands"].str.strip().tolist()
 
         # Separate rows with blocked brands
         removed_rows = combined_df[combined_df["BRAND"].isin(blocked_brands_list)]
