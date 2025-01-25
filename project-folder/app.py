@@ -367,10 +367,10 @@ if uploaded_files:
             st.write("### Rows Removed Due to Blocked Brands")
             st.dataframe(removed_rows)
 
-            # Provide a download button for the removed rows
-            buffer_removed = BytesIO()
-            with pd.ExcelWriter(buffer_removed, engine="openpyxl") as writer:
-                removed_rows.to_excel(writer, index=False, sheet_name="Removed_Blocked_Brands")
+        # Provide a download button for the removed rows
+        buffer_removed = BytesIO()
+        with pd.ExcelWriter(buffer_removed, engine="openpyxl") as writer:
+            removed_rows.to_excel(writer, index=False, sheet_name="Removed_Blocked_Brands")
             buffer_removed.seek(0)
 
             st.download_button(
@@ -381,10 +381,10 @@ if uploaded_files:
             )
 
         st.success(f"Blocked brands have been filtered out. {len(removed_rows)} rows removed.")
-    except Exception as e:
-        st.error(f"Error processing blocked brands: {e}")
-else:
-    st.warning("The 'BRAND' column is missing from the uploaded data. Blocked brands could not be processed.")
+        except Exception as e:
+            st.error(f"Error processing blocked brands: {e}")
+        else:
+            st.warning("The 'BRAND' column is missing from the uploaded data. Blocked brands could not be processed.")
 
 
     # Step 11.1: Calculate and Display Metrics
